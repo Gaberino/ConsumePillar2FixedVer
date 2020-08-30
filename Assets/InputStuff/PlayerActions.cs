@@ -49,6 +49,14 @@ public class @PlayerActions : IInputActionCollection, IDisposable
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """"
+                },
+                {
+                    ""name"": ""Consume"",
+                    ""type"": ""Button"",
+                    ""id"": ""38219a79-c911-40b1-9875-1096e8546557"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """"
                 }
             ],
             ""bindings"": [
@@ -139,6 +147,17 @@ public class @PlayerActions : IInputActionCollection, IDisposable
                     ""action"": ""MoveRight"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""778b43cd-7661-4591-8b42-693721bb9ec8"",
+                    ""path"": ""<Keyboard>/space"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Consume"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -163,6 +182,7 @@ public class @PlayerActions : IInputActionCollection, IDisposable
         m_Default_MoveDown = m_Default.FindAction("MoveDown", throwIfNotFound: true);
         m_Default_MoveLeft = m_Default.FindAction("MoveLeft", throwIfNotFound: true);
         m_Default_MoveRight = m_Default.FindAction("MoveRight", throwIfNotFound: true);
+        m_Default_Consume = m_Default.FindAction("Consume", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -216,6 +236,7 @@ public class @PlayerActions : IInputActionCollection, IDisposable
     private readonly InputAction m_Default_MoveDown;
     private readonly InputAction m_Default_MoveLeft;
     private readonly InputAction m_Default_MoveRight;
+    private readonly InputAction m_Default_Consume;
     public struct DefaultActions
     {
         private @PlayerActions m_Wrapper;
@@ -224,6 +245,7 @@ public class @PlayerActions : IInputActionCollection, IDisposable
         public InputAction @MoveDown => m_Wrapper.m_Default_MoveDown;
         public InputAction @MoveLeft => m_Wrapper.m_Default_MoveLeft;
         public InputAction @MoveRight => m_Wrapper.m_Default_MoveRight;
+        public InputAction @Consume => m_Wrapper.m_Default_Consume;
         public InputActionMap Get() { return m_Wrapper.m_Default; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -245,6 +267,9 @@ public class @PlayerActions : IInputActionCollection, IDisposable
                 @MoveRight.started -= m_Wrapper.m_DefaultActionsCallbackInterface.OnMoveRight;
                 @MoveRight.performed -= m_Wrapper.m_DefaultActionsCallbackInterface.OnMoveRight;
                 @MoveRight.canceled -= m_Wrapper.m_DefaultActionsCallbackInterface.OnMoveRight;
+                @Consume.started -= m_Wrapper.m_DefaultActionsCallbackInterface.OnConsume;
+                @Consume.performed -= m_Wrapper.m_DefaultActionsCallbackInterface.OnConsume;
+                @Consume.canceled -= m_Wrapper.m_DefaultActionsCallbackInterface.OnConsume;
             }
             m_Wrapper.m_DefaultActionsCallbackInterface = instance;
             if (instance != null)
@@ -261,6 +286,9 @@ public class @PlayerActions : IInputActionCollection, IDisposable
                 @MoveRight.started += instance.OnMoveRight;
                 @MoveRight.performed += instance.OnMoveRight;
                 @MoveRight.canceled += instance.OnMoveRight;
+                @Consume.started += instance.OnConsume;
+                @Consume.performed += instance.OnConsume;
+                @Consume.canceled += instance.OnConsume;
             }
         }
     }
@@ -280,5 +308,6 @@ public class @PlayerActions : IInputActionCollection, IDisposable
         void OnMoveDown(InputAction.CallbackContext context);
         void OnMoveLeft(InputAction.CallbackContext context);
         void OnMoveRight(InputAction.CallbackContext context);
+        void OnConsume(InputAction.CallbackContext context);
     }
 }

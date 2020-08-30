@@ -108,9 +108,14 @@ public class MortisController : Singleton<MortisController>
 
     void Do_Move_Forward()
     {
-        canControl = false;
-        Tween.Position(transform, transform.position + transform.forward, moveDur, 0f, Tween.EaseSpring, Tween.LoopType.None, null,
-        () => { canControl = true; });
+        Vector2 direction = new Vector2(transform.forward.x, transform.forward.z);
+        
+        if (LevelManager.Instance.AttemptMove(direction))
+        {
+            canControl = false;
+            Tween.Position(transform, transform.position + transform.forward, moveDur, 0f, Tween.EaseSpring, Tween.LoopType.None, null,
+            () => { canControl = true; });
+        }
     }
 
     void Do_Rotate(Direction dir)
@@ -188,5 +193,18 @@ public class MortisController : Singleton<MortisController>
         canControl = false;
         Tween.Rotate(transform, Vector3.up * turnDeg, Space.World, turnDur, 0f, Tween.EaseSpring, Tween.LoopType.None, null,
             () => { facing = dir; canControl = true; });
+    }
+
+    private void OnConsume()
+    {
+        Vector2 direction = new Vector2(transform.forward.x, transform.forward.z);
+        LevelManager.Instance.AttemptConsume(direction, (block) =>
+        {
+            if (block.Properties.Contains(Block.PROPERTY.Consumable))
+            {
+                Debug.Log("Monch");
+                // On eat logic
+            }
+        });
     }
 }
