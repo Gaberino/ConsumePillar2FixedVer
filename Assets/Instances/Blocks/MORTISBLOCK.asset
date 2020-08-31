@@ -14,3 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Properties: 01000000
   Prefab: {fileID: 4837775572952187030, guid: 34fd6a5e0465cbb45ba5e481ee774b93, type: 3}
+  consumedForm: {fileID: 0}

@@ -12,7 +12,9 @@ public class LevelManager : MonoBehaviour
     {
         public Block block;
         public GameObject gameObject;
-        public Vector2 gridPos;
+        public Vector2Int gridPos;
+        public BlockInstance linkedBlock; //linked block responds to movement attempts from head block
+        public IDynamicBlock script;
     }
 
     [SerializeField]
@@ -30,12 +32,12 @@ public class LevelManager : MonoBehaviour
     //[SerializeField]
     //private Vector2 PlayerPosition;
     
-    public Stack<Stack<Action>> undoInstructions = new Stack<Stack<Action>>();
+    public Stack<Queue<Action>> undoInstructions = new Stack<Queue<Action>>();
 
     void Start()
     {
         Instance = this;
-        undoInstructions.Push(new Stack<Action>());
+        undoInstructions.Push(new Queue<Action>());
         LoadLevel(InitialLevel);
     }
 
@@ -52,7 +54,9 @@ public class LevelManager : MonoBehaviour
 
     public bool AttemptMove(BlockInstance someBlock, Vector2 direction)
     {
-        Vector2 target = someBlock.gridPos + new Vector2(Mathf.Round(direction.x), Mathf.Round(direction.y));
+        //generate new testing grid by setting the public testing grid to current state
+        //if (someBlock.linkedBlock != null) 
+        Vector2Int target = someBlock.gridPos + Vector2Int.RoundToInt(direction);
 
         if (!(WithinBounds(target, out int x, out int y)))
         {
@@ -65,25 +69,25 @@ public class LevelManager : MonoBehaviour
             return false;
         }
         //all clear
-        Action unMove = () => { ForceMove(someBlock, someBlock.gridPos); Debug.Log("didmove"); };
+        Vector2Int storedPos = someBlock.gridPos;
+        Action unMove = () => { ForceMove(someBlock, storedPos); Debug.Log("didmove"); };
         
-        undoInstructions.Peek().Push(unMove);
-
+        undoInstructions.Peek().Enqueue(unMove);
         someBlock.gridPos = target;        
         return true;
     }
 
-    public void AttemptConsume(BlockInstance someBlock, Vector2 direction, Action<Block> OnAttemptCallback)
+    public void AttemptConsume(BlockInstance someBlock, Vector2 direction, Action<BlockInstance> OnAttemptCallback)
     {
-        Vector2 target = someBlock.gridPos + new Vector2(Mathf.Round(direction.x), Mathf.Round(direction.y));
+        Vector2Int target = someBlock.gridPos + Vector2Int.RoundToInt(direction);
 
         if (WithinBounds(target, out int x, out int y) && CurrentLevel[x, y] != null)
         {
-            OnAttemptCallback(CurrentLevel[x, y].block);
-            if (CurrentLevel[x, y].block.Properties.Contains(Block.PROPERTY.Consumable))
-            {
-                RemoveAtUnchecked(x, y);
-            }
+            OnAttemptCallback(CurrentLevel[x, y]);
+            //if (CurrentLevel[x, y].block.Properties.Contains(Block.PROPERTY.Consumable))
+            //{
+            //    RemoveAtUnchecked(x, y);
+            //}
         }
         Debug.Log(x + ", " + y);
     }
@@ -114,9 +118,17 @@ public class LevelManager : MonoBehaviour
             //};
         }
         LoadBlock(pBlock);
+        //purge undo of level make
+        undoInstructions.Pop();
+        undoInstructions.Push(new Queue<Action>());
     }
 
-    private void LoadBlock(LevelTemplate.BlockDefinition bD)
+    public BlockInstance LoadBlock(LevelTemplate.BlockDefinition bD)
+    {
+        return LoadBlock(bD, null);
+    }
+
+    public BlockInstance LoadBlock(LevelTemplate.BlockDefinition bD, BlockInstance childInstance)
     {
         GameObject instance = Instantiate(bD.block.Prefab, transform);
         Vector3 localPosition = bD.block.Prefab.gameObject.transform.localPosition + new Vector3(bD.position.x, 0.0f, bD.position.y);
@@ -126,10 +138,16 @@ public class LevelManager : MonoBehaviour
             block = bD.block,
             gameObject = instance,
             gridPos = bD.position,
+            linkedBlock = childInstance,
         };
 
         CurrentLevel[(int)bD.position.x, (int)bD.position.y] = someBlockInstance;
+
         instance.SendMessage("SetBlockInstance", someBlockInstance, SendMessageOptions.DontRequireReceiver);
+        //to undo
+        Action unMake = () => { RemoveAtUnchecked((int)bD.position.x, (int)bD.position.y); };
+        undoInstructions.Peek().Enqueue(unMake);
+        return someBlockInstance;
     }
 
     public void Undo()
@@ -137,26 +155,30 @@ public class LevelManager : MonoBehaviour
         Debug.Log("undo called");
         if (undoInstructions.Count > 1)
         {
-            Debug.Log("undo stacks > 1");
             undoInstructions.Pop(); //pop empty
-            for (int i = 0; i < undoInstructions.Peek().Count ; i++)
+            int numOfOps = undoInstructions.Peek().Count;
+            for (int i = 0; i < numOfOps ; i++)
             {
-                undoInstructions.Peek().Pop().Invoke();
+                undoInstructions.Peek().Dequeue().Invoke();
             }
+            //cleanse the junk
+            undoInstructions.Pop();
+            undoInstructions.Push(new Queue<Action>());
         }
     }
 
-    private void ForceMove(BlockInstance bI, Vector2 pos)
+    private void ForceMove(BlockInstance bI, Vector2Int pos)
     {
         //move thing to grid pos
-        CurrentLevel[(int)bI.gridPos.x, (int)bI.gridPos.y] = null;
+        if (CurrentLevel[(int)bI.gridPos.x, (int)bI.gridPos.y] == bI)
+            CurrentLevel[(int)bI.gridPos.x, (int)bI.gridPos.y] = null;
         CurrentLevel[(int)pos.x, (int)pos.y] = bI;
         bI.gridPos = pos;
 
         bI.gameObject.transform.localPosition = new Vector3(pos.x, 0, pos.y);
     }
 
-    public void RemoveAt(Vector2 position)
+    public void RemoveAt(Vector2Int position)
     {
         if (WithinBounds(position, out int x, out int y))
         {
@@ -172,12 +194,18 @@ public class LevelManager : MonoBehaviour
     {
         if (CurrentLevel[x, y] != null)
         {
+            LevelTemplate.BlockDefinition remakeDef = new LevelTemplate.BlockDefinition {
+                position = new Vector2Int(x, y),
+                block = CurrentLevel[x,y].block};
+            Action remake = () => { LoadBlock(remakeDef, CurrentLevel[x, y].linkedBlock); };
+            undoInstructions.Peek().Enqueue(remake);
             Destroy(CurrentLevel[x, y].gameObject);
         }
         CurrentLevel[x, y] = null;
+
     }
 
-    private bool WithinBounds(Vector2 target, out int x, out int y)
+    private bool WithinBounds(Vector2Int target, out int x, out int y)
     {
         x = (int)target.x;
         y = (int)target.y;

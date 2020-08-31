@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using Pixelplacement;
 using System;
+using UnityEngine.SceneManagement;
 
 public enum Direction { Up, Down, Left, Right}
 
-public class MortisController : Singleton<MortisController>
+public class MortisController : Singleton<MortisController>, IDynamicBlock
 {
     [Min (0f)]
     public float moveDur = 0.5f;
@@ -115,6 +116,11 @@ public class MortisController : Singleton<MortisController>
         }
     }
 
+    void OnReset()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
     void Do_Move_Forward()
     {
         Vector2 direction = new Vector2(transform.forward.x, transform.forward.z);
@@ -123,9 +129,9 @@ public class MortisController : Singleton<MortisController>
         {
             Direction tempfacing = facing;
             Action undoRot = () => { MortisController.Instance.Set_Rotate(tempfacing); Debug.Log("did rot"); };
-            LevelManager.Instance.undoInstructions.Peek().Push(undoRot);
+            LevelManager.Instance.undoInstructions.Peek().Enqueue(undoRot);
             //start new undo stack
-            LevelManager.Instance.undoInstructions.Push(new Stack<Action>());
+            LevelManager.Instance.undoInstructions.Push(new Queue<Action>());
             canControl = false;
             Tween.Position(transform, transform.position + transform.forward, moveDur, 0f, Tween.EaseSpring, Tween.LoopType.None, null,
             () => { canControl = true; });
@@ -239,11 +245,24 @@ public class MortisController : Singleton<MortisController>
     private void OnConsume()
     {
         Vector2 direction = new Vector2(transform.forward.x, transform.forward.z);
-        LevelManager.Instance.AttemptConsume(myBlockInstance, direction, (block) =>
+        LevelManager.Instance.AttemptConsume(myBlockInstance, direction, (blockToConsume) =>
         {
-            if (block.Properties.Contains(Block.PROPERTY.Consumable))
+            if (blockToConsume.block.Properties.Contains(Block.PROPERTY.Consumable))
             {
+                LevelTemplate.BlockDefinition def = new LevelTemplate.BlockDefinition
+                {
+                    position = myBlockInstance.gridPos,
+                    block = blockToConsume.block.consumedForm,
+                };
+                LevelManager.Instance.RemoveAtUnchecked((int)blockToConsume.gridPos.x, (int)blockToConsume.gridPos.y);
+
                 Debug.Log("Monch");
+                Tween.LocalScale(transform, transform.localScale, moveDur, 0f, Tween.EaseWobble);
+                LevelManager.BlockInstance tempInstance = myBlockInstance.linkedBlock;
+                myBlockInstance.linkedBlock = LevelManager.Instance.LoadBlock(def, tempInstance);
+
+                Do_Move_Forward();
+                
                 // On eat logic
             }
         });
@@ -252,5 +271,11 @@ public class MortisController : Singleton<MortisController>
     public void SetBlockInstance(LevelManager.BlockInstance toSet) //important guy ayyyyyy
     {
         myBlockInstance = toSet;
+        myBlockInstance.script = this;
+    }
+
+    public bool CanLinkedMove(Direction parentMoveDir, Vector2Int parentPos)
+    {
+        return false;
     }
 }
