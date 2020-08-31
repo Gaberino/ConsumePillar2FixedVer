@@ -57,6 +57,22 @@ public class @PlayerActions : IInputActionCollection, IDisposable
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """"
+                },
+                {
+                    ""name"": ""Undo"",
+                    ""type"": ""Button"",
+                    ""id"": ""eb0e854f-d42c-4904-affe-6ee14deed946"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """"
+                },
+                {
+                    ""name"": ""Reset"",
+                    ""type"": ""Button"",
+                    ""id"": ""bd5dcc3b-6d70-4dce-8bc7-9c509fa32ef3"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """"
                 }
             ],
             ""bindings"": [
@@ -158,6 +174,28 @@ public class @PlayerActions : IInputActionCollection, IDisposable
                     ""action"": ""Consume"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""791087f2-b764-457f-9cf7-d104ca4e9346"",
+                    ""path"": ""<Keyboard>/z"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard"",
+                    ""action"": ""Undo"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""b1dfcbc9-81ef-431a-9873-e4d2420a8b3c"",
+                    ""path"": ""<Keyboard>/r"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard"",
+                    ""action"": ""Reset"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -183,6 +221,8 @@ public class @PlayerActions : IInputActionCollection, IDisposable
         m_Default_MoveLeft = m_Default.FindAction("MoveLeft", throwIfNotFound: true);
         m_Default_MoveRight = m_Default.FindAction("MoveRight", throwIfNotFound: true);
         m_Default_Consume = m_Default.FindAction("Consume", throwIfNotFound: true);
+        m_Default_Undo = m_Default.FindAction("Undo", throwIfNotFound: true);
+        m_Default_Reset = m_Default.FindAction("Reset", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -237,6 +277,8 @@ public class @PlayerActions : IInputActionCollection, IDisposable
     private readonly InputAction m_Default_MoveLeft;
     private readonly InputAction m_Default_MoveRight;
     private readonly InputAction m_Default_Consume;
+    private readonly InputAction m_Default_Undo;
+    private readonly InputAction m_Default_Reset;
     public struct DefaultActions
     {
         private @PlayerActions m_Wrapper;
@@ -246,6 +288,8 @@ public class @PlayerActions : IInputActionCollection, IDisposable
         public InputAction @MoveLeft => m_Wrapper.m_Default_MoveLeft;
         public InputAction @MoveRight => m_Wrapper.m_Default_MoveRight;
         public InputAction @Consume => m_Wrapper.m_Default_Consume;
+        public InputAction @Undo => m_Wrapper.m_Default_Undo;
+        public InputAction @Reset => m_Wrapper.m_Default_Reset;
         public InputActionMap Get() { return m_Wrapper.m_Default; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -270,6 +314,12 @@ public class @PlayerActions : IInputActionCollection, IDisposable
                 @Consume.started -= m_Wrapper.m_DefaultActionsCallbackInterface.OnConsume;
                 @Consume.performed -= m_Wrapper.m_DefaultActionsCallbackInterface.OnConsume;
                 @Consume.canceled -= m_Wrapper.m_DefaultActionsCallbackInterface.OnConsume;
+                @Undo.started -= m_Wrapper.m_DefaultActionsCallbackInterface.OnUndo;
+                @Undo.performed -= m_Wrapper.m_DefaultActionsCallbackInterface.OnUndo;
+                @Undo.canceled -= m_Wrapper.m_DefaultActionsCallbackInterface.OnUndo;
+                @Reset.started -= m_Wrapper.m_DefaultActionsCallbackInterface.OnReset;
+                @Reset.performed -= m_Wrapper.m_DefaultActionsCallbackInterface.OnReset;
+                @Reset.canceled -= m_Wrapper.m_DefaultActionsCallbackInterface.OnReset;
             }
             m_Wrapper.m_DefaultActionsCallbackInterface = instance;
             if (instance != null)
@@ -289,6 +339,12 @@ public class @PlayerActions : IInputActionCollection, IDisposable
                 @Consume.started += instance.OnConsume;
                 @Consume.performed += instance.OnConsume;
                 @Consume.canceled += instance.OnConsume;
+                @Undo.started += instance.OnUndo;
+                @Undo.performed += instance.OnUndo;
+                @Undo.canceled += instance.OnUndo;
+                @Reset.started += instance.OnReset;
+                @Reset.performed += instance.OnReset;
+                @Reset.canceled += instance.OnReset;
             }
         }
     }
@@ -309,5 +365,7 @@ public class @PlayerActions : IInputActionCollection, IDisposable
         void OnMoveLeft(InputAction.CallbackContext context);
         void OnMoveRight(InputAction.CallbackContext context);
         void OnConsume(InputAction.CallbackContext context);
+        void OnUndo(InputAction.CallbackContext context);
+        void OnReset(InputAction.CallbackContext context);
     }
 }

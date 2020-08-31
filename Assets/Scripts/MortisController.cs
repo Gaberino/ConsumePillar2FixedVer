@@ -16,6 +16,7 @@ public class MortisController : Singleton<MortisController>
     public float inputBuffer = 100f; //in milliseconds
     private float timer = 0f;
 
+    private LevelManager.BlockInstance myBlockInstance;
     private Action bufferedMethod = () => { };
 
     bool canControl = true;
@@ -106,12 +107,25 @@ public class MortisController : Singleton<MortisController>
         }
     }
 
+    void OnUndo()
+    {
+        if (canControl)
+        {
+            LevelManager.Instance.Undo();
+        }
+    }
+
     void Do_Move_Forward()
     {
         Vector2 direction = new Vector2(transform.forward.x, transform.forward.z);
         
-        if (LevelManager.Instance.AttemptMove(direction))
+        if (LevelManager.Instance.AttemptMove(myBlockInstance, direction))
         {
+            Direction tempfacing = facing;
+            Action undoRot = () => { MortisController.Instance.Set_Rotate(tempfacing); Debug.Log("did rot"); };
+            LevelManager.Instance.undoInstructions.Peek().Push(undoRot);
+            //start new undo stack
+            LevelManager.Instance.undoInstructions.Push(new Stack<Action>());
             canControl = false;
             Tween.Position(transform, transform.position + transform.forward, moveDur, 0f, Tween.EaseSpring, Tween.LoopType.None, null,
             () => { canControl = true; });
@@ -120,6 +134,7 @@ public class MortisController : Singleton<MortisController>
 
     void Do_Rotate(Direction dir)
     {
+        
         float turnDeg = 0f;
         switch (dir)
         {
@@ -195,10 +210,36 @@ public class MortisController : Singleton<MortisController>
             () => { facing = dir; canControl = true; });
     }
 
+    public void Set_Rotate(Direction dir)
+    {
+        Debug.Log("actually did rot");
+        switch (dir)
+        {
+            case Direction.Up:
+                transform.localEulerAngles = Vector3.zero;
+                facing = Direction.Up;
+                break;
+            case Direction.Down:
+                transform.localEulerAngles = Vector3.up * 180f;
+                facing = Direction.Down;
+                break;
+            case Direction.Left:
+                transform.localEulerAngles = Vector3.up * -90f;
+                facing = Direction.Left;
+                break;
+            case Direction.Right:
+                transform.localEulerAngles = Vector3.up * 90f;
+                facing = Direction.Right;
+                break;
+            default:
+                break;
+        }
+    }
+
     private void OnConsume()
     {
         Vector2 direction = new Vector2(transform.forward.x, transform.forward.z);
-        LevelManager.Instance.AttemptConsume(direction, (block) =>
+        LevelManager.Instance.AttemptConsume(myBlockInstance, direction, (block) =>
         {
             if (block.Properties.Contains(Block.PROPERTY.Consumable))
             {
@@ -206,5 +247,10 @@ public class MortisController : Singleton<MortisController>
                 // On eat logic
             }
         });
+    }
+
+    public void SetBlockInstance(LevelManager.BlockInstance toSet) //important guy ayyyyyy
+    {
+        myBlockInstance = toSet;
     }
 }
