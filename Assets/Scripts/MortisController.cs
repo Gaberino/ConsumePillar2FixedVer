@@ -135,6 +135,8 @@ public class MortisController : Singleton<MortisController>, IDynamicBlock
             canControl = false;
             Tween.Position(transform, transform.position + transform.forward, moveDur, 0f, Tween.EaseSpring, Tween.LoopType.None, null,
             () => { canControl = true; });
+
+            LevelManager.Instance.OnAfterMove();
         }
     }
 
