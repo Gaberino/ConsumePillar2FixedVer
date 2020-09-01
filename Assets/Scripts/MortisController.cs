@@ -22,9 +22,15 @@ public class MortisController : Singleton<MortisController>, IDynamicBlock
 
     public bool canControl = true;
     public Direction facing = Direction.Down;
+    public Dictionary<Direction, bool> sealedMoves;
     // Start is called before the first frame update
     void Start()
     {
+        sealedMoves = new Dictionary<Direction, bool>(4);
+        sealedMoves.Add(Direction.Up, false);
+        sealedMoves.Add(Direction.Down, false);
+        sealedMoves.Add(Direction.Left, false);
+        sealedMoves.Add(Direction.Right, false);
         bufferedMethod = MortisLazy;
     }
 
@@ -57,7 +63,7 @@ public class MortisController : Singleton<MortisController>, IDynamicBlock
         if (canControl)
         {
             if (transform.forward == Vector3.forward) Do_Move_Forward();
-            else Do_Rotate(Direction.Up);
+            else AttemptRotate(Direction.Up);
         }
         else if (bufferedMethod != OnMoveUp)
         {
@@ -71,7 +77,7 @@ public class MortisController : Singleton<MortisController>, IDynamicBlock
         if (canControl)
         {
             if (transform.forward == Vector3.back) Do_Move_Forward();
-            else Do_Rotate(Direction.Down);
+            else AttemptRotate(Direction.Down);
         }
         else if (bufferedMethod != OnMoveDown)
         {
@@ -85,7 +91,7 @@ public class MortisController : Singleton<MortisController>, IDynamicBlock
         if (canControl)
         {
             if (transform.forward == Vector3.left) Do_Move_Forward();
-            else Do_Rotate(Direction.Left);
+            else AttemptRotate(Direction.Left);
         }
         else if (bufferedMethod != OnMoveLeft)
         {
@@ -99,7 +105,7 @@ public class MortisController : Singleton<MortisController>, IDynamicBlock
         if (canControl)
         {
             if (transform.forward == Vector3.right) Do_Move_Forward();
-            else Do_Rotate(Direction.Right);
+            else AttemptRotate(Direction.Right);
         }
         else if (bufferedMethod != OnMoveRight)
         {
@@ -134,6 +140,8 @@ public class MortisController : Singleton<MortisController>, IDynamicBlock
             LevelManager.Instance.undoInstructions.Peek().Enqueue(undoRot);
             LevelManager.Instance.MoveBlock(myBlockInstance, direction);
             if (myBlockInstance.linkedBlock?.script != null) myBlockInstance.linkedBlock.script.DoLinkedMove(direction, storedPos);
+            //set sealing
+            SetSealing(LevelManager.Instance.GetAdjacentsOnLayer(myBlockInstance.gridPos));
 
             //start new undo stack
             LevelManager.Instance.undoInstructions.Push(new Queue<Action>());
@@ -144,9 +152,35 @@ public class MortisController : Singleton<MortisController>, IDynamicBlock
         }
     }
 
-    void Do_Rotate(Direction dir)
+    void SetSealing(LevelManager.BlockInstance[] adj)
     {
-        
+        Debug.Log("Set Sealing!");
+        Dictionary<Direction, bool> newSeals = new Dictionary<Direction, bool>(sealedMoves);
+        if (adj[0] != null && adj[0].block.Properties.Contains(Block.PROPERTY.Solid))
+            newSeals[Direction.Up] = true;
+        else newSeals[Direction.Up] = false;
+
+        if (adj[1] != null && adj[1].block.Properties.Contains(Block.PROPERTY.Solid))
+            newSeals[Direction.Down] = true;
+        else newSeals[Direction.Down] = false;
+
+        if (adj[2] != null && adj[2].block.Properties.Contains(Block.PROPERTY.Solid))
+            newSeals[Direction.Left] = true;
+        else newSeals[Direction.Left] = false;
+
+        if (adj[3] != null && adj[3].block.Properties.Contains(Block.PROPERTY.Solid))
+            newSeals[Direction.Right] = true;
+        else newSeals[Direction.Right] = false;
+
+        //queue set back to previous
+        Dictionary<Direction, bool> oldSeals = new Dictionary<Direction, bool>(sealedMoves);
+        LevelManager.Instance.undoInstructions.Peek().Enqueue(() => { MortisController.Instance.sealedMoves = oldSeals; });
+        sealedMoves = newSeals;
+    }
+
+    bool AttemptRotate(Direction dir)
+    {
+        if (sealedMoves[dir]) return false;
         float turnDeg = 0f;
         switch (dir)
         {
@@ -154,7 +188,7 @@ public class MortisController : Singleton<MortisController>, IDynamicBlock
                 switch (facing)
                 {
                     case Direction.Down:
-                        turnDeg = -180f;
+                        turnDeg = (!sealedMoves[Direction.Right]) ? -180f : 180f;
                         break;
                     case Direction.Left:
                         turnDeg = 90f;
@@ -170,7 +204,7 @@ public class MortisController : Singleton<MortisController>, IDynamicBlock
                 switch (facing)
                 {
                     case Direction.Up:
-                        turnDeg = 180f;
+                        turnDeg = (!sealedMoves[Direction.Right]) ? 180f : -180f;
                         break;
                     case Direction.Left:
                         turnDeg = -90f;
@@ -192,7 +226,7 @@ public class MortisController : Singleton<MortisController>, IDynamicBlock
                         turnDeg = 90f;
                         break;
                     case Direction.Right:
-                        turnDeg = 180f;
+                        turnDeg = (!sealedMoves[Direction.Down]) ? 180f : -180f;
                         break;
                     default:
                         break;
@@ -208,7 +242,7 @@ public class MortisController : Singleton<MortisController>, IDynamicBlock
                         turnDeg = -90f;
                         break;
                     case Direction.Left:
-                        turnDeg = -180f;
+                        turnDeg = (!sealedMoves[Direction.Down]) ? -180f: 180f;
                         break;
                     default:
                         break;
@@ -220,6 +254,7 @@ public class MortisController : Singleton<MortisController>, IDynamicBlock
         canControl = false;
         Tween.Rotate(transform, Vector3.up * turnDeg, Space.World, turnDur, 0f, Tween.EaseSpring, Tween.LoopType.None, null,
             () => { facing = dir; canControl = true; });
+        return true;
     }
 
     public void Set_Rotate(Direction dir)
@@ -273,6 +308,7 @@ public class MortisController : Singleton<MortisController>, IDynamicBlock
 
 
                 LevelManager.Instance.MoveBlock(myBlockInstance, direction);
+                SetSealing(LevelManager.Instance.GetAdjacentsOnLayer(myBlockInstance.gridPos));
                 //start new undo stack
                 LevelManager.Instance.undoInstructions.Push(new Queue<Action>());
                 // On eat logic

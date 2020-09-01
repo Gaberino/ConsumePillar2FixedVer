@@ -129,6 +129,28 @@ public class LevelManager : MonoBehaviour
         return true;
     }
 
+    public LevelManager.BlockInstance[] GetAdjacentsOnLayer(Vector3Int pos)
+    {
+        Vector2Int upPos = (Vector2Int)pos + Vector2Int.up;
+        Vector2Int downPos = (Vector2Int)pos + Vector2Int.down;
+        Vector2Int leftPos = (Vector2Int)pos + Vector2Int.left;
+        Vector2Int rightPos = (Vector2Int)pos + Vector2Int.right;
+        int x = 0;
+        int y = 0;
+
+        LevelManager.BlockInstance[] returnArray = new BlockInstance[4];
+        returnArray[0] = (WithinBounds(upPos, out x, out y) &&
+            CurrentLevel[x, y, pos.z] != null) ? CurrentLevel[x, y, pos.z] : null;
+        returnArray[1] = (WithinBounds(downPos, out x, out y) &&
+            CurrentLevel[x, y, pos.z] != null) ? CurrentLevel[x, y, pos.z] : null;
+        returnArray[2] = (WithinBounds(leftPos, out x, out y) &&
+            CurrentLevel[x, y, pos.z] != null) ? CurrentLevel[x, y, pos.z] : null;
+        returnArray[3] = (WithinBounds(rightPos, out x, out y) &&
+            CurrentLevel[x, y, pos.z] != null) ? CurrentLevel[x, y, pos.z] : null;
+
+        return returnArray;
+    }
+
     public void AttemptConsume(BlockInstance someBlock, Vector2Int direction, Action<BlockInstance> OnAttemptCallback)
     {
         Vector2Int target = (Vector2Int)someBlock.gridPos + direction;
