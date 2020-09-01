@@ -123,12 +123,12 @@ public class MortisController : Singleton<MortisController>, IDynamicBlock
 
     void Do_Move_Forward()
     {
-        Vector2 direction = new Vector2(transform.forward.x, transform.forward.z);
+        Vector2Int direction = new Vector2Int(Mathf.RoundToInt(transform.forward.x), Mathf.RoundToInt(transform.forward.z));
         
         if (LevelManager.Instance.AttemptMove(myBlockInstance, direction))
         {
             Direction tempfacing = facing;
-            Action undoRot = () => { MortisController.Instance.Set_Rotate(tempfacing); Debug.Log("did rot"); };
+            Action undoRot = () => { MortisController.Instance.Set_Rotate(tempfacing);};
             LevelManager.Instance.undoInstructions.Peek().Enqueue(undoRot);
             //start new undo stack
             LevelManager.Instance.undoInstructions.Push(new Queue<Action>());
@@ -218,7 +218,6 @@ public class MortisController : Singleton<MortisController>, IDynamicBlock
 
     public void Set_Rotate(Direction dir)
     {
-        Debug.Log("actually did rot");
         switch (dir)
         {
             case Direction.Up:
@@ -244,17 +243,17 @@ public class MortisController : Singleton<MortisController>, IDynamicBlock
 
     private void OnConsume()
     {
-        Vector2 direction = new Vector2(transform.forward.x, transform.forward.z);
+        Vector2Int direction = new Vector2Int(Mathf.RoundToInt(transform.forward.x), Mathf.RoundToInt(transform.forward.z));
         LevelManager.Instance.AttemptConsume(myBlockInstance, direction, (blockToConsume) =>
         {
             if (blockToConsume.block.Properties.Contains(Block.PROPERTY.Consumable))
             {
                 LevelTemplate.BlockDefinition def = new LevelTemplate.BlockDefinition
                 {
-                    position = myBlockInstance.gridPos,
+                    position = (Vector2Int)myBlockInstance.gridPos,
                     block = blockToConsume.block.consumedForm,
                 };
-                LevelManager.Instance.RemoveAtUnchecked((int)blockToConsume.gridPos.x, (int)blockToConsume.gridPos.y);
+                LevelManager.Instance.RemoveAtUnchecked(blockToConsume.gridPos);
 
                 Debug.Log("Monch");
                 Tween.LocalScale(transform, transform.localScale, moveDur, 0f, Tween.EaseWobble);
@@ -274,7 +273,7 @@ public class MortisController : Singleton<MortisController>, IDynamicBlock
         myBlockInstance.script = this;
     }
 
-    public bool CanLinkedMove(Direction parentMoveDir, Vector2Int parentPos)
+    public bool CanLinkedMove(Direction parentMoveDir, Vector3Int parentPos)
     {
         return false;
     }

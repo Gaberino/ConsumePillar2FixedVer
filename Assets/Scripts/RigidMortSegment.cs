@@ -12,7 +12,7 @@ public class RigidMortSegment : MonoBehaviour, IDynamicBlock
         myBlockInstance.script = this;
     }
 
-    public bool CanLinkedMove(Direction parentMoveDir, Vector2Int parentPos)
+    public bool CanLinkedMove(Direction parentMoveDir, Vector3Int parentPos)
     {
         //target direction will be same as parent move
         if (myBlockInstance.linkedBlock != null && myBlockInstance.linkedBlock.script != null)
@@ -38,6 +38,6 @@ public class RigidMortSegment : MonoBehaviour, IDynamicBlock
 
 public interface IDynamicBlock
 {
-    bool CanLinkedMove(Direction parentMoveDir, Vector2Int parentPos);
+    bool CanLinkedMove(Direction parentMoveDir, Vector3Int parentPos);
     void SetBlockInstance(LevelManager.BlockInstance toSet);
 }

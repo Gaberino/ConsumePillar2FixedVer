@@ -12,7 +12,7 @@ public class LevelManager : MonoBehaviour
     {
         public Block block;
         public GameObject gameObject;
-        public Vector2Int gridPos;
+        public Vector3Int gridPos; //z is layer
         public BlockInstance linkedBlock; //linked block responds to movement attempts from head block
         public IDynamicBlock script;
     }
@@ -28,7 +28,7 @@ public class LevelManager : MonoBehaviour
     public Block playerBlock;
 
     private int CurrentLevelIndex;
-    private BlockInstance[,] CurrentLevel;
+    private BlockInstance[,,] CurrentLevel;
     //[SerializeField]
     //private Vector2 PlayerPosition;
     
@@ -52,42 +52,59 @@ public class LevelManager : MonoBehaviour
     //    Player.transform.SetParent(gameObject.transform, false);
     //}
 
-    public bool AttemptMove(BlockInstance someBlock, Vector2 direction)
+    public bool AttemptMove(BlockInstance someBlock, Vector2Int direction)
     {
         //generate new testing grid by setting the public testing grid to current state
         //if (someBlock.linkedBlock != null) 
-        Vector2Int target = someBlock.gridPos + Vector2Int.RoundToInt(direction);
+        Vector2Int target = (Vector2Int)someBlock.gridPos + direction;
 
         if (!(WithinBounds(target, out int x, out int y)))
         {
             return false;
         }
 
-        if (CurrentLevel[x, y] != null &&
-            CurrentLevel[x, y].block.Properties.Contains(Block.PROPERTY.Solid))
+        if (CurrentLevel[x, y, 1] != null) //solid at that position
         {
             return false;
         }
         //all clear
-        Vector2Int storedPos = someBlock.gridPos;
-        Action unMove = () => { ForceMove(someBlock, storedPos); Debug.Log("didmove"); };
+        Vector3Int storedPos = someBlock.gridPos;
+        Action unMove = () => { ForceMove(someBlock, storedPos); };
         
         undoInstructions.Peek().Enqueue(unMove);
-        someBlock.gridPos = target;        
+
+        someBlock.gridPos = new Vector3Int(target.x, target.y, someBlock.gridPos.z); //stay in your lane
+        if (CurrentLevel[storedPos.x, storedPos.y, storedPos.z] == someBlock)
+            CurrentLevel[storedPos.x, storedPos.y, storedPos.z] = null; //remove self from last pos if something else isn't there
+        CurrentLevel[someBlock.gridPos.x, someBlock.gridPos.y, someBlock.gridPos.z] = someBlock; //assign self to new pos
+        
         return true;
     }
 
-    public void AttemptConsume(BlockInstance someBlock, Vector2 direction, Action<BlockInstance> OnAttemptCallback)
+    public void AttemptConsume(BlockInstance someBlock, Vector2Int direction, Action<BlockInstance> OnAttemptCallback)
     {
-        Vector2Int target = someBlock.gridPos + Vector2Int.RoundToInt(direction);
+        Vector2Int target = (Vector2Int)someBlock.gridPos + direction;
+        if (WithinBounds(target, out int x, out int y)) {
+            //Find the first consumable, start from player layer go down
+            //can consume self?
+            int targLayer = -1;
+            for (int i = 2; i > -1; i--)
+            {
+                if (CurrentLevel[x, y, i] != null)
+                {
+                    targLayer = i;
+                    break;
+                }
+            }
 
-        if (WithinBounds(target, out int x, out int y) && CurrentLevel[x, y] != null)
-        {
-            OnAttemptCallback(CurrentLevel[x, y]);
-            //if (CurrentLevel[x, y].block.Properties.Contains(Block.PROPERTY.Consumable))
-            //{
-            //    RemoveAtUnchecked(x, y);
-            //}
+            if (targLayer > -1)
+            {
+                OnAttemptCallback(CurrentLevel[x, y, targLayer]);
+                //if (CurrentLevel[x, y].block.Properties.Contains(Block.PROPERTY.Consumable))
+                //{
+                //    RemoveAtUnchecked(x, y);
+                //}
+            }
         }
         Debug.Log(x + ", " + y);
     }
@@ -98,7 +115,7 @@ public class LevelManager : MonoBehaviour
         //ResetPlayerPosition();
         LevelTemplate level = Levels[levelIndex];
         Board.Instance.SetGrid(level.Height, level.Width);
-        CurrentLevel = new BlockInstance[level.Height, level.Width];
+        CurrentLevel = new BlockInstance[level.Height, level.Width, 3]; //3 layers, passables, solids, player
         LevelTemplate.BlockDefinition pBlock = new LevelTemplate.BlockDefinition
         {
             position = level.PlayerStartPostion,
@@ -138,15 +155,21 @@ public class LevelManager : MonoBehaviour
         {
             block = bD.block,
             gameObject = instance,
-            gridPos = bD.position,
+            gridPos = Vector3Int.zero, //assign to this post def so we can check props for layer
             linkedBlock = childInstance,
         };
+        List<Block.PROPERTY> sbProps = someBlockInstance.block.Properties;
+        int layerAssign = 0;
 
-        CurrentLevel[(int)bD.position.x, (int)bD.position.y] = someBlockInstance;
+        if (sbProps.Contains(Block.PROPERTY.Player)) layerAssign = 2;
+        else if (sbProps.Contains(Block.PROPERTY.Solid)) layerAssign = 1;
 
+        someBlockInstance.gridPos = new Vector3Int(bD.position.x, bD.position.y, layerAssign);
+
+        CurrentLevel[bD.position.x, bD.position.y, layerAssign] = someBlockInstance;
         instance.SendMessage("SetBlockInstance", someBlockInstance, SendMessageOptions.DontRequireReceiver);
         //to undo
-        Action unMake = () => { RemoveAtUnchecked((int)bD.position.x, (int)bD.position.y); };
+        Action unMake = () => { RemoveAtUnchecked(new Vector3Int(bD.position.x, bD.position.y, layerAssign)); };
         undoInstructions.Peek().Enqueue(unMake);
         return someBlockInstance;
     }
@@ -168,41 +191,41 @@ public class LevelManager : MonoBehaviour
         }
     }
 
-    private void ForceMove(BlockInstance bI, Vector2Int pos)
+    private void ForceMove(BlockInstance bI, Vector3Int pos) //z is layer
     {
         //move thing to grid pos
-        if (CurrentLevel[(int)bI.gridPos.x, (int)bI.gridPos.y] == bI)
-            CurrentLevel[(int)bI.gridPos.x, (int)bI.gridPos.y] = null;
-        CurrentLevel[(int)pos.x, (int)pos.y] = bI;
+        if (CurrentLevel[bI.gridPos.x, bI.gridPos.y, bI.gridPos.z] == bI)
+            CurrentLevel[bI.gridPos.x, bI.gridPos.y, bI.gridPos.z] = null;
+        CurrentLevel[pos.x, pos.y, pos.z] = bI;
         bI.gridPos = pos;
 
         bI.gameObject.transform.localPosition = new Vector3(pos.x, 0, pos.y);
     }
 
-    public void RemoveAt(Vector2Int position)
+    public void RemoveAt(Vector3Int position)
     {
-        if (WithinBounds(position, out int x, out int y))
+        if (WithinBounds((Vector2Int)position, out int x, out int y))
         {
-            if (CurrentLevel[x, y] != null)
+            if (CurrentLevel[x, y, position.z] != null)
             {
-                Destroy(CurrentLevel[x, y].gameObject);
+                Destroy(CurrentLevel[x, y, position.z].gameObject);
             }
-            CurrentLevel[x, y] = null;
+            CurrentLevel[x, y, position.z] = null;
         }
     }
 
-    public void RemoveAtUnchecked(int x, int y)
+    public void RemoveAtUnchecked(Vector3Int pos)
     {
-        if (CurrentLevel[x, y] != null)
+        if (CurrentLevel[pos.x, pos.y, pos.z] != null)
         {
             LevelTemplate.BlockDefinition remakeDef = new LevelTemplate.BlockDefinition {
-                position = new Vector2Int(x, y),
-                block = CurrentLevel[x,y].block};
-            Action remake = () => { LoadBlock(remakeDef, CurrentLevel[x, y].linkedBlock); };
+                position = new Vector2Int(pos.x, pos.y),
+                block = CurrentLevel[pos.x,pos.y, pos.z].block};
+            Action remake = () => { LoadBlock(remakeDef, CurrentLevel[pos.x, pos.y, pos.z]?.linkedBlock); };
             undoInstructions.Peek().Enqueue(remake);
-            Destroy(CurrentLevel[x, y].gameObject);
+            Destroy(CurrentLevel[pos.x, pos.y, pos.z].gameObject);
         }
-        CurrentLevel[x, y] = null;
+        CurrentLevel[pos.x, pos.y, pos.z] = null;
 
     }
 
