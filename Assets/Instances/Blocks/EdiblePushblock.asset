@@ -10,8 +10,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3ec87f47a249a5d4daca92dc7b2c7a17, type: 3}
-  m_Name: Mortis_RigidSegment
+  m_Name: EdiblePushblock
   m_EditorClassIdentifier: 
-  Properties: 0400000001000000
-  Prefab: {fileID: 8353723097440208793, guid: 3ffc33f4e82ed44428c091b8c74c3be6, type: 3}
-  consumedForm: {fileID: 0}
+  Properties: 010000000200000005000000
+  Prefab: {fileID: 2183691220607763411, guid: c4f3bfcf212aca24fad7f83f704c656d, type: 3}
+  consumedForm: {fileID: 11400000, guid: 95f5ab2e09a63e548ae26b2eaeffb9fc, type: 2}

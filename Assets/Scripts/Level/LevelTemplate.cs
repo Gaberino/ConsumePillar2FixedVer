@@ -14,6 +14,7 @@ public class LevelTemplate : ScriptableObject
     }
 
     [Header("Level Properties")]
+    public string LevelName;
     public int Height;
     public int Width;
     public Vector2Int PlayerStartPostion;

@@ -6,7 +6,7 @@ using NaughtyAttributes;
 [CreateAssetMenu(fileName = "NewBlock", menuName = "ScriptableObjects/Block")]
 public class Block : ScriptableObject
 {
-    public enum PROPERTY { None = 0, Solid, Consumable, Solution, Player }
+    public enum PROPERTY { None = 0, Solid, Consumable, Solution, Player, Pusheable }
     
     public List<PROPERTY> Properties;
     public GameObject Prefab;

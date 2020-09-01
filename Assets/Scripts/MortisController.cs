@@ -20,7 +20,7 @@ public class MortisController : Singleton<MortisController>, IDynamicBlock
     private LevelManager.BlockInstance myBlockInstance;
     private Action bufferedMethod = () => { };
 
-    bool canControl = true;
+    public bool canControl = true;
     public Direction facing = Direction.Down;
     // Start is called before the first frame update
     void Start()
@@ -127,14 +127,20 @@ public class MortisController : Singleton<MortisController>, IDynamicBlock
         
         if (LevelManager.Instance.AttemptMove(myBlockInstance, direction))
         {
+            canControl = false;
             Direction tempfacing = facing;
+            Vector3Int storedPos = myBlockInstance.gridPos;
             Action undoRot = () => { MortisController.Instance.Set_Rotate(tempfacing);};
             LevelManager.Instance.undoInstructions.Peek().Enqueue(undoRot);
+            LevelManager.Instance.MoveBlock(myBlockInstance, direction);
+            if (myBlockInstance.linkedBlock?.script != null) myBlockInstance.linkedBlock.script.DoLinkedMove(direction, storedPos);
+
             //start new undo stack
             LevelManager.Instance.undoInstructions.Push(new Queue<Action>());
-            canControl = false;
-            Tween.Position(transform, transform.position + transform.forward, moveDur, 0f, Tween.EaseSpring, Tween.LoopType.None, null,
-            () => { canControl = true; });
+            //canControl = false;
+            //Tween.Position(transform, transform.position + transform.forward, moveDur, 0f, Tween.EaseSpring, Tween.LoopType.None, null,
+            //() => { canControl = true; });
+            //SfxManager.Instance.PlayMoveSound();
         }
     }
 
@@ -254,14 +260,21 @@ public class MortisController : Singleton<MortisController>, IDynamicBlock
                     block = blockToConsume.block.consumedForm,
                 };
                 LevelManager.Instance.RemoveAtUnchecked(blockToConsume.gridPos);
-
-                Debug.Log("Monch");
-                Tween.LocalScale(transform, transform.localScale, moveDur, 0f, Tween.EaseWobble);
+                //Debug.Log("Monch");
+                Tween.LocalScale(transform, transform.localScale, moveDur, 0f, Tween.EaseWobble, Tween.LoopType.None, null, () => { canControl = true; });
                 LevelManager.BlockInstance tempInstance = myBlockInstance.linkedBlock;
-                myBlockInstance.linkedBlock = LevelManager.Instance.LoadBlock(def, tempInstance);
+                LevelManager.BlockInstance newSegment = LevelManager.Instance.LoadBlock(def, tempInstance, myBlockInstance);
+                LevelManager.Instance.SetBlockLink(myBlockInstance, newSegment);
 
-                Do_Move_Forward();
-                
+                canControl = false;
+                Direction tempfacing = facing;
+                Action undoRot = () => { MortisController.Instance.Set_Rotate(tempfacing); };
+                LevelManager.Instance.undoInstructions.Peek().Enqueue(undoRot);
+
+
+                LevelManager.Instance.MoveBlock(myBlockInstance, direction);
+                //start new undo stack
+                LevelManager.Instance.undoInstructions.Push(new Queue<Action>());
                 // On eat logic
             }
         });
@@ -273,8 +286,21 @@ public class MortisController : Singleton<MortisController>, IDynamicBlock
         myBlockInstance.script = this;
     }
 
-    public bool CanLinkedMove(Direction parentMoveDir, Vector3Int parentPos)
+    public bool CanLinkedMove(Vector2Int parentMoveDir, Vector3Int parentPos)
     {
         return false;
+    }
+
+    public void DoLinkedMove(Vector2Int parentMove, Vector3Int parentPos)
+    {
+        //does nothing for me because I'm never a child, so never called
+    }
+
+    public void DoVisualMove(Vector2Int move)
+    {
+        Action completeAction = null;
+        if (myBlockInstance.linkedBlock == null) completeAction = () => { canControl = true; };
+
+        Tween.Position(transform, transform.position + transform.forward, moveDur, 0f, Tween.EaseSpring, Tween.LoopType.None, null, completeAction);
     }
 }

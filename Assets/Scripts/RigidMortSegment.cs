@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System;
 using UnityEngine;
+using Pixelplacement;
 
 public class RigidMortSegment : MonoBehaviour, IDynamicBlock
 {
@@ -12,32 +14,44 @@ public class RigidMortSegment : MonoBehaviour, IDynamicBlock
         myBlockInstance.script = this;
     }
 
-    public bool CanLinkedMove(Direction parentMoveDir, Vector3Int parentPos)
+    public bool CanLinkedMove(Vector2Int parentMoveDir, Vector3Int parentPos)
     {
-        //target direction will be same as parent move
+        //continue cascading to bottom of chain
+        //target direction will be same as parent move for rigid segments
         if (myBlockInstance.linkedBlock != null && myBlockInstance.linkedBlock.script != null)
             if (!myBlockInstance.linkedBlock.script.CanLinkedMove(parentMoveDir, myBlockInstance.gridPos)) return false;
-        //NEED TO MAKE A SECOND, TEMPORARY GRID THAT I CAN MOVE STUFF ON AS IT CASCADES FROM TAIL, DOES NOT CHANGE ANYTHING, JUST USED TO PERFORM
-        //TESTING AND THEN MERCILESSLY SLAUGHTERED
-        //no linked block
-        return false;
+
+        if (!LevelManager.Instance.CanMoveTo(myBlockInstance, (Vector2Int)myBlockInstance.gridPos + parentMoveDir, parentMoveDir)) return false;
+        
+
+        return true;
     }
 
-    // Start is called before the first frame update
-    void Start()
+    public void DoVisualMove(Vector2Int move)
     {
-        
+        //rigid segments move in lockstep with their parent segment
+        Action completeAction = null;
+        if (myBlockInstance.linkedBlock == null)
+        {
+            completeAction = () => { MortisController.Instance.canControl = true; };
+        }
+        Tween.Position(transform, new Vector3(transform.position.x + move.x, transform.position.y, transform.position.z + move.y),
+            MortisController.Instance.moveDur, 0f, Tween.EaseSpring, Tween.LoopType.None, null, completeAction);
     }
-    
-    // Update is called once per frame
-    void Update()
+
+    public void DoLinkedMove(Vector2Int parentMoveDir, Vector3Int parentPos) //process the parent's move to make my own
     {
-        
+        //do move in same dir
+        Vector3Int storedPos = myBlockInstance.gridPos;
+        LevelManager.Instance.MoveBlock(myBlockInstance, parentMoveDir);
+        if (myBlockInstance.linkedBlock?.script != null) myBlockInstance.linkedBlock.script.DoLinkedMove(parentMoveDir, storedPos);
     }
 }
 
 public interface IDynamicBlock
 {
-    bool CanLinkedMove(Direction parentMoveDir, Vector3Int parentPos);
+    bool CanLinkedMove(Vector2Int parentMoveDir, Vector3Int parentPos);
     void SetBlockInstance(LevelManager.BlockInstance toSet);
+    void DoVisualMove(Vector2Int move);
+    void DoLinkedMove(Vector2Int parentMoveDir, Vector3Int parentPos);
 }

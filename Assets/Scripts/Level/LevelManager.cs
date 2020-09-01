@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections;
+﻿using NaughtyAttributes;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
-using NaughtyAttributes;
 
 public class LevelManager : MonoBehaviour
 {
@@ -14,6 +13,7 @@ public class LevelManager : MonoBehaviour
         public GameObject gameObject;
         public Vector3Int gridPos; //z is layer
         public BlockInstance linkedBlock; //linked block responds to movement attempts from head block
+        public BlockInstance ownerBlock; //reverse of linked
         public IDynamicBlock script;
     }
 
@@ -54,30 +54,79 @@ public class LevelManager : MonoBehaviour
 
     public bool AttemptMove(BlockInstance someBlock, Vector2Int direction)
     {
-        //generate new testing grid by setting the public testing grid to current state
-        //if (someBlock.linkedBlock != null) 
+        if (someBlock.linkedBlock != null)
+            if (!someBlock.linkedBlock.script.CanLinkedMove(direction, someBlock.gridPos)) return false;
+
         Vector2Int target = (Vector2Int)someBlock.gridPos + direction;
+        if (!CanMoveTo(someBlock, target, direction)) return false;
+        //if (!(WithinBounds(target, out int x, out int y)))
+        //{
+        //    return false;
+        //}
 
-        if (!(WithinBounds(target, out int x, out int y)))
-        {
-            return false;
-        }
-
-        if (CurrentLevel[x, y, 1] != null) //solid at that position
-        {
-            return false;
-        }
+        //if (CurrentLevel[x, y, 1] != null) //solid at that position
+        //{
+        //    return false;
+        //}
         //all clear
+        //move self then cascade back
+        //do not return control until all is done
+        //Vector3Int storedPos = someBlock.gridPos;
+        //Action unMove = () => { ForceMove(someBlock, storedPos); };
+        
+        //undoInstructions.Peek().Enqueue(unMove);
+
+        //someBlock.gridPos = new Vector3Int(target.x, target.y, someBlock.gridPos.z); //stay in your lane
+        //if (CurrentLevel[storedPos.x, storedPos.y, storedPos.z] == someBlock)
+        //    CurrentLevel[storedPos.x, storedPos.y, storedPos.z] = null; //remove self from last pos if something else isn't there
+        //CurrentLevel[someBlock.gridPos.x, someBlock.gridPos.y, someBlock.gridPos.z] = someBlock; //assign self to new pos
+        
+        return true;
+    }
+
+    public void MoveBlock(BlockInstance someBlock, Vector2Int direction) //call only if attempt move is cleared
+    {
+        //moves a blockinstance by direction to a new grid position and vacates old position
+        //runs input 
+        Vector2Int target = (Vector2Int)someBlock.gridPos + direction;
+        if (CurrentLevel[target.x, target.y, 1] != null) //move the moveable that could be in front of us
+            MoveBlock(CurrentLevel[target.x, target.y, 1], direction);
+
         Vector3Int storedPos = someBlock.gridPos;
         Action unMove = () => { ForceMove(someBlock, storedPos); };
-        
+
         undoInstructions.Peek().Enqueue(unMove);
 
         someBlock.gridPos = new Vector3Int(target.x, target.y, someBlock.gridPos.z); //stay in your lane
         if (CurrentLevel[storedPos.x, storedPos.y, storedPos.z] == someBlock)
             CurrentLevel[storedPos.x, storedPos.y, storedPos.z] = null; //remove self from last pos if something else isn't there
         CurrentLevel[someBlock.gridPos.x, someBlock.gridPos.y, someBlock.gridPos.z] = someBlock; //assign self to new pos
+
+        if (someBlock.script != null) someBlock.script.DoVisualMove(direction);
+        else someBlock.gameObject.transform.localPosition = new Vector3(target.x, 0, target.y);
+    }
+
+    public bool CanMoveTo(BlockInstance movingBlock, Vector2Int pos, Vector2Int move)
+    {
+        //operate under the assumption that mortis is weak, and therefore
+        //if we were to be pushing a solid, and that solid was to use this func
+        //to check if it can move, it will be unable if there is another solid in the way
+        //this does mean however that a long rigid mortis can push a line of blocks, but not blocks on blocks
+        //get what's there
+        if (!WithinBounds(pos, out int x, out int y)) return false; //no move ob
+
+        BlockInstance sAtPos = CurrentLevel[pos.x, pos.y, 1];
+        if (sAtPos != null)
+        {
+            if (sAtPos.block.Properties.Contains(Block.PROPERTY.Solid) && movingBlock.block.Properties.Contains(Block.PROPERTY.Player))
+            {
+                if (!sAtPos.block.Properties.Contains(Block.PROPERTY.Pusheable)) return false;
+                else if (!CanMoveTo(sAtPos, new Vector2Int(sAtPos.gridPos.x + move.x, sAtPos.gridPos.y + move.y), move)) return false;
+            }
+            else return false;
+        }
         
+
         return true;
     }
 
@@ -106,7 +155,7 @@ public class LevelManager : MonoBehaviour
                 //}
             }
         }
-        Debug.Log(x + ", " + y);
+        //Debug.Log(x + ", " + y);
     }
 
     private void LoadLevel(int levelIndex)
@@ -143,10 +192,10 @@ public class LevelManager : MonoBehaviour
 
     public BlockInstance LoadBlock(LevelTemplate.BlockDefinition bD)
     {
-        return LoadBlock(bD, null);
+        return LoadBlock(bD, null, null);
     }
 
-    public BlockInstance LoadBlock(LevelTemplate.BlockDefinition bD, BlockInstance childInstance)
+    public BlockInstance LoadBlock(LevelTemplate.BlockDefinition bD, BlockInstance linkedInstance, BlockInstance ownerInstance)
     {
         GameObject instance = Instantiate(bD.block.Prefab, transform);
         Vector3 localPosition = bD.block.Prefab.gameObject.transform.localPosition + new Vector3(bD.position.x, 0.0f, bD.position.y);
@@ -156,8 +205,11 @@ public class LevelManager : MonoBehaviour
             block = bD.block,
             gameObject = instance,
             gridPos = Vector3Int.zero, //assign to this post def so we can check props for layer
-            linkedBlock = childInstance,
+            linkedBlock = null, //assign in way we can undo
+            ownerBlock = null,
         };
+        if (ownerInstance != null) SetBlockOwner(someBlockInstance, ownerInstance);
+        if (linkedInstance != null) SetBlockLink(someBlockInstance, linkedInstance);
         List<Block.PROPERTY> sbProps = someBlockInstance.block.Properties;
         int layerAssign = 0;
 
@@ -174,9 +226,27 @@ public class LevelManager : MonoBehaviour
         return someBlockInstance;
     }
 
+    public void SetBlockOwner(BlockInstance child, BlockInstance newOwner)
+    {
+        Debug.Log("set a ownership of " + child.gameObject.name + " to " + newOwner?.gameObject.name);
+        BlockInstance oldOwner = child.ownerBlock;
+        Action revertOwner = () => { SetBlockOwner(child, oldOwner); };
+        undoInstructions.Peek().Enqueue(revertOwner);
+        child.ownerBlock = newOwner;
+    }
+
+    public void SetBlockLink(BlockInstance owner, BlockInstance newLink)
+    {
+        Debug.Log("set a link from " + owner.gameObject.name + " to " + newLink?.gameObject.name);
+        BlockInstance oldLink = owner.linkedBlock;
+        Action revertLink = () => { SetBlockLink(owner, oldLink); };
+        undoInstructions.Peek().Enqueue(revertLink);
+        owner.linkedBlock = newLink;
+    }
+
     public void Undo()
     {
-        Debug.Log("undo called");
+        //Debug.Log("undo called");
         if (undoInstructions.Count > 1)
         {
             undoInstructions.Pop(); //pop empty
@@ -221,10 +291,11 @@ public class LevelManager : MonoBehaviour
             LevelTemplate.BlockDefinition remakeDef = new LevelTemplate.BlockDefinition {
                 position = new Vector2Int(pos.x, pos.y),
                 block = CurrentLevel[pos.x,pos.y, pos.z].block};
-            Action remake = () => { LoadBlock(remakeDef, CurrentLevel[pos.x, pos.y, pos.z]?.linkedBlock); };
+            Action remake = () => { LoadBlock(remakeDef, CurrentLevel[pos.x, pos.y, pos.z]?.linkedBlock, CurrentLevel[pos.x, pos.y, pos.z]?.ownerBlock); };
             undoInstructions.Peek().Enqueue(remake);
             Destroy(CurrentLevel[pos.x, pos.y, pos.z].gameObject);
         }
+        if (CurrentLevel[pos.x, pos.y, pos.z].ownerBlock != null) CurrentLevel[pos.x, pos.y, pos.z].ownerBlock.linkedBlock = null; //clear self from parent
         CurrentLevel[pos.x, pos.y, pos.z] = null;
 
     }

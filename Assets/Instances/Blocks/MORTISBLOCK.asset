@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3ec87f47a249a5d4daca92dc7b2c7a17, type: 3}
   m_Name: MORTISBLOCK
   m_EditorClassIdentifier: 
-  Properties: 01000000
+  Properties: 0400000001000000
   Prefab: {fileID: 4837775572952187030, guid: 34fd6a5e0465cbb45ba5e481ee774b93, type: 3}
   consumedForm: {fileID: 0}
