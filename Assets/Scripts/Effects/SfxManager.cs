@@ -6,8 +6,12 @@ using Pixelplacement;
 public class SfxManager : Singleton<SfxManager>
 {
 
-	public AudioClip bleepSound;
-	public AudioClip boopSound;
+	public AudioClip moveSound;
+	public AudioClip eatSound;
+	public AudioClip bumpSound;
+	public AudioClip winSound;
+	public AudioClip headPopOffSound;
+	public AudioClip undoSound;
 
 	private AudioSource audioSource;
 
@@ -29,13 +33,33 @@ public class SfxManager : Singleton<SfxManager>
         }
     }
 
-	public void PlayBleepSound()
+	public void PlayMoveSound()
     {
-		TryPlay(bleepSound, nameof(bleepSound));
+		TryPlay(moveSound, nameof(moveSound));
 	}
-	
-	public void PlayBoopSound()
+
+	public void PlayEatSound()
 	{
-		TryPlay(boopSound, nameof(boopSound));
+		TryPlay(eatSound, nameof(eatSound));
+	}
+
+	public void PlayBumpSound()
+	{
+		TryPlay(bumpSound, nameof(bumpSound));
+	}
+
+	public void PlayWinSound()
+	{
+		TryPlay(winSound, nameof(winSound));
+	}
+
+	public void PlayHeadPopOffSound()
+	{
+		TryPlay(headPopOffSound, nameof(headPopOffSound));
+	}
+
+	public void PlayUndoSound()
+	{
+		TryPlay(undoSound, nameof(undoSound));
 	}
 }
