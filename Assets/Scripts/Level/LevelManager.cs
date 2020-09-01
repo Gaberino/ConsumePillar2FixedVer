@@ -102,7 +102,6 @@ public class LevelManager : MonoBehaviour
             CurrentLevel[storedPos.x, storedPos.y, storedPos.z] = null; //remove self from last pos if something else isn't there
         CurrentLevel[someBlock.gridPos.x, someBlock.gridPos.y, someBlock.gridPos.z] = someBlock; //assign self to new pos
 
-<<<<<<< HEAD
         if (someBlock.script != null) someBlock.script.DoVisualMove(direction);
         else someBlock.gameObject.transform.localPosition = new Vector3(target.x, 0, target.y);
     }
@@ -127,9 +126,6 @@ public class LevelManager : MonoBehaviour
             else return false;
         }
         
-
-=======
->>>>>>> cdd3b63fbad7f952ee7b641d0d7c93e002e3a37c
         return true;
     }
 
@@ -302,7 +298,7 @@ public class LevelManager : MonoBehaviour
         CurrentLevel[bD.position.x, bD.position.y, layerAssign] = someBlockInstance;
         instance.SendMessage("SetBlockInstance", someBlockInstance, SendMessageOptions.DontRequireReceiver);
         //to undo
-        Action unMake = () => { RemoveAtUnchecked(new Vector3Int(bD.position.x, bD.position.y, layerAssign)); };
+        Action unMake = () => { RemoveAt(new Vector3Int(bD.position.x, bD.position.y, layerAssign)); };
         undoInstructions.Peek().Enqueue(unMake);
         return someBlockInstance;
     }
@@ -359,7 +355,7 @@ public class LevelManager : MonoBehaviour
         {
             if (CurrentLevel[x, y, position.z] != null)
             {
-                Destroy(CurrentLevel[x, y, position.z].gameObject);
+               Destroy(CurrentLevel[x, y, position.z].gameObject);
             }
             CurrentLevel[x, y, position.z] = null;
         }
@@ -369,16 +365,24 @@ public class LevelManager : MonoBehaviour
     {
         if (CurrentLevel[pos.x, pos.y, pos.z] != null)
         {
-            LevelTemplate.BlockDefinition remakeDef = new LevelTemplate.BlockDefinition {
-                position = new Vector2Int(pos.x, pos.y),
-                block = CurrentLevel[pos.x,pos.y, pos.z].block};
-            Action remake = () => { LoadBlock(remakeDef, CurrentLevel[pos.x, pos.y, pos.z]?.linkedBlock, CurrentLevel[pos.x, pos.y, pos.z]?.ownerBlock); };
-            undoInstructions.Peek().Enqueue(remake);
-            Destroy(CurrentLevel[pos.x, pos.y, pos.z].gameObject);
+            BlockInstance blockAtPos = CurrentLevel[pos.x, pos.y, pos.z];
+            //LevelTemplate.BlockDefinition remakeDef = new LevelTemplate.BlockDefinition {
+            //    position = new Vector2Int(pos.x, pos.y),
+            //    block = CurrentLevel[pos.x,pos.y, pos.z].block};
+            //Action remake = () => { LoadBlock(remakeDef, CurrentLevel[pos.x, pos.y, pos.z]?.linkedBlock, CurrentLevel[pos.x, pos.y, pos.z]?.ownerBlock); };
+            Action revive = () => { ReviveBlock(blockAtPos); };
+            undoInstructions.Peek().Enqueue(revive);
+            CurrentLevel[pos.x, pos.y, pos.z].gameObject.SetActive(false);
         }
         if (CurrentLevel[pos.x, pos.y, pos.z].ownerBlock != null) CurrentLevel[pos.x, pos.y, pos.z].ownerBlock.linkedBlock = null; //clear self from parent
         CurrentLevel[pos.x, pos.y, pos.z] = null;
 
+    }
+
+    public void ReviveBlock(BlockInstance dedBlok)
+    {
+        dedBlok.gameObject.SetActive(true);
+        CurrentLevel[dedBlok.gridPos.x, dedBlok.gridPos.y, dedBlok.gridPos.z] = dedBlok;
     }
 
     private bool WithinBounds(Vector2Int target, out int x, out int y)
