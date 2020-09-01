@@ -97,6 +97,7 @@ public class LevelManager : MonoBehaviour
         CurrentLevelIndex = levelIndex;
         //ResetPlayerPosition();
         LevelTemplate level = Levels[levelIndex];
+        Board.Instance.SetGrid(level.Height, level.Width);
         CurrentLevel = new BlockInstance[level.Height, level.Width];
         LevelTemplate.BlockDefinition pBlock = new LevelTemplate.BlockDefinition
         {
