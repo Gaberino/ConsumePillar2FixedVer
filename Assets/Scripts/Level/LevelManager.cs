@@ -31,7 +31,7 @@ public class LevelManager : MonoBehaviour
     private BlockInstance[,,] CurrentLevel;
     //[SerializeField]
     //private Vector2 PlayerPosition;
-    
+
     public Stack<Queue<Action>> undoInstructions = new Stack<Queue<Action>>();
 
     void Start()
@@ -46,8 +46,8 @@ public class LevelManager : MonoBehaviour
         Instance = null;
     }
 
-   // public void ResetPlayerPosition()
-   // {
+    // public void ResetPlayerPosition()
+    // {
     //    Player.transform.position = new Vector3(Levels[CurrentLevelIndex].PlayerStartPostion.x, 0.0f, Levels[CurrentLevelIndex].PlayerStartPostion.y);
     //    Player.transform.SetParent(gameObject.transform, false);
     //}
@@ -102,6 +102,7 @@ public class LevelManager : MonoBehaviour
             CurrentLevel[storedPos.x, storedPos.y, storedPos.z] = null; //remove self from last pos if something else isn't there
         CurrentLevel[someBlock.gridPos.x, someBlock.gridPos.y, someBlock.gridPos.z] = someBlock; //assign self to new pos
 
+<<<<<<< HEAD
         if (someBlock.script != null) someBlock.script.DoVisualMove(direction);
         else someBlock.gameObject.transform.localPosition = new Vector3(target.x, 0, target.y);
     }
@@ -127,6 +128,8 @@ public class LevelManager : MonoBehaviour
         }
         
 
+=======
+>>>>>>> cdd3b63fbad7f952ee7b641d0d7c93e002e3a37c
         return true;
     }
 
@@ -158,6 +161,19 @@ public class LevelManager : MonoBehaviour
         //Debug.Log(x + ", " + y);
     }
 
+    public void GoToNextLevel()
+    {
+        SwitchToLevel(CurrentLevelIndex + 1);
+    }
+
+    public void SwitchToLevel(int levelIndex)
+    {
+
+        // Do other things like animations.
+        UnloadCurrentLevel();
+        LoadLevel(levelIndex);
+    }
+
     private void LoadLevel(int levelIndex)
     {
         CurrentLevelIndex = levelIndex;
@@ -170,7 +186,7 @@ public class LevelManager : MonoBehaviour
             position = level.PlayerStartPostion,
             block = playerBlock,
         };
-        
+
         foreach (LevelTemplate.BlockDefinition blockDefinition in level.Blocklist)
         {
             LoadBlock(blockDefinition);
@@ -180,14 +196,79 @@ public class LevelManager : MonoBehaviour
 
             //CurrentLevel[(int)blockDefinition.position.x, (int)blockDefinition.position.y] = new BlockInstance
             //{
-             //   block = blockDefinition.block,
-             //   gameObject = instance,
+            //   block = blockDefinition.block,
+            //   gameObject = instance,
             //};
         }
         LoadBlock(pBlock);
         //purge undo of level make
         undoInstructions.Pop();
         undoInstructions.Push(new Queue<Action>());
+    }
+
+    public void UnloadCurrentLevel()
+    {
+        UnloadBlocks();
+        CurrentLevel = null;
+    }
+
+    public void UnloadBlocks()
+    {
+        foreach (BlockInstance block in CurrentLevel)
+        {
+            if (block != null)
+            {
+                Destroy(block.gameObject);
+            }
+        }
+    }
+
+    public void OnCompleteLevel()
+    {
+        // Do other things like animations.
+        GoToNextLevel();
+    }
+
+    public void OnAfterMove()
+    {
+        if (IsLevelInWinState())
+        {
+            OnCompleteLevel();
+        }
+    }
+
+    public bool IsLevelInWinState()
+    {
+        //
+        // Placeholder: Currently sets IsInWinState when player is on a solution block.
+        //
+
+        HashSet<Block.PROPERTY> propertiesAtPosition = new HashSet<Block.PROPERTY>();
+
+        for (int x = 0; x < Levels[CurrentLevelIndex].Width; x++)
+        {
+            for (int y = 0; y < Levels[CurrentLevelIndex].Height; y++)
+            {
+                propertiesAtPosition.Clear();
+
+                for (int z = 0; z < 3; z++)
+                {
+                    if (CurrentLevel[x, y, z] != null)
+                    {
+                        foreach (Block.PROPERTY prop in CurrentLevel[x, y, z].block.Properties)
+                        {
+                            propertiesAtPosition.Add(prop);
+                        }
+                    }
+                }
+
+                if (propertiesAtPosition.Contains(Block.PROPERTY.Player) && propertiesAtPosition.Contains(Block.PROPERTY.Solution))
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public BlockInstance LoadBlock(LevelTemplate.BlockDefinition bD)
