@@ -26,7 +26,7 @@ MonoBehaviour:
   - position: {x: 6, y: 1}
     block: {fileID: 11400000, guid: d96e0d8e429dbb7498517502a083fc05, type: 2}
   - position: {x: 5, y: 3}
-    block: {fileID: 11400000, guid: be6be38eeb3f6bd418381493eab2f6a9, type: 2}
+    block: {fileID: 11400000, guid: d96e0d8e429dbb7498517502a083fc05, type: 2}
   - position: {x: 5, y: 4}
     block: {fileID: 11400000, guid: be6be38eeb3f6bd418381493eab2f6a9, type: 2}
   - position: {x: 5, y: 5}

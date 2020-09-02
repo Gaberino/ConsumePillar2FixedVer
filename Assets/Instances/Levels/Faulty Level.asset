@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Faulty Level
   m_EditorClassIdentifier: 
   LevelName: 
-  Height: 0
-  Width: 0
+  Height: 1
+  Width: 3
   PlayerStartPostion: {x: 0, y: 0}
   Blocklist: []

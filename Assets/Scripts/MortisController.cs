@@ -274,9 +274,10 @@ public class MortisController : Singleton<MortisController>, IDynamicBlock
                 LevelManager.Instance.RemoveAtUnchecked(blockToConsume.gridPos);
                 //Debug.Log("Monch");
                 Tween.LocalScale(transform, transform.localScale, moveDur, 0f, Tween.EaseWobble, Tween.LoopType.None, null, () => { canControl = true; });
-                LevelManager.BlockInstance tempInstance = myBlockInstance.linkedBlock;
-                LevelManager.BlockInstance newSegment = LevelManager.Instance.LoadBlock(def, tempInstance, myBlockInstance);
+                LevelManager.BlockInstance tempLinkInstance = myBlockInstance.linkedBlock;
+                LevelManager.BlockInstance newSegment = LevelManager.Instance.LoadBlock(def, tempLinkInstance, myBlockInstance);
                 LevelManager.Instance.SetBlockLink(myBlockInstance, newSegment);
+                if (newSegment.linkedBlock != null) LevelManager.Instance.SetBlockOwner(newSegment.linkedBlock, newSegment);
 
                 canControl = false;
                 Direction tempfacing = facing;

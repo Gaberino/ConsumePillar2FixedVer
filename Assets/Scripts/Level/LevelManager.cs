@@ -56,10 +56,14 @@ public class LevelManager : MonoBehaviour
 
     public bool AttemptMove(BlockInstance someBlock, Vector2Int direction)
     {
+        Vector2Int target = (Vector2Int)someBlock.gridPos + direction;
+
+        if (CurrentLevel[target.x, target.y, 2] != null) return false;
+
         if (someBlock.linkedBlock != null)
             if (!someBlock.linkedBlock.script.CanLinkedMove(direction, someBlock.gridPos)) return false;
 
-        Vector2Int target = (Vector2Int)someBlock.gridPos + direction;
+        
         if (!CanMoveTo(someBlock, target, direction)) return false;
         //if (!(WithinBounds(target, out int x, out int y)))
         //{
@@ -434,6 +438,7 @@ public class LevelManager : MonoBehaviour
     {
         dedBlok.gameObject.SetActive(true);
         CurrentLevel[dedBlok.gridPos.x, dedBlok.gridPos.y, dedBlok.gridPos.z] = dedBlok;
+        if (dedBlok.ownerBlock != null) SetBlockLink(dedBlok.ownerBlock, dedBlok);
     }
 
     private bool WithinBounds(Vector2Int target, out int x, out int y)

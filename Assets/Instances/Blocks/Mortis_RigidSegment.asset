@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3ec87f47a249a5d4daca92dc7b2c7a17, type: 3}
   m_Name: Mortis_RigidSegment
   m_EditorClassIdentifier: 
-  Properties: 0400000001000000
+  Properties: 040000000100000002000000
   Prefab: {fileID: 8353723097440208793, guid: 3ffc33f4e82ed44428c091b8c74c3be6, type: 3}
-  consumedForm: {fileID: 0}
+  consumedForm: {fileID: 11400000}
