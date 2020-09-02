@@ -13,7 +13,17 @@ MonoBehaviour:
   m_Name: Faulty Level
   m_EditorClassIdentifier: 
   LevelName: 
-  Height: 0
-  Width: 0
+  Height: 6
+  Width: 6
   PlayerStartPostion: {x: 0, y: 0}
-  Blocklist: []
+  Blocklist:
+  - position: {x: 2, y: 2}
+    block: {fileID: 11400000, guid: 9eaecf5eb25edce4bacf0b27e4834a85, type: 2}
+  - position: {x: 2, y: 3}
+    block: {fileID: 11400000, guid: 9eaecf5eb25edce4bacf0b27e4834a85, type: 2}
+  - position: {x: 4, y: 1}
+    block: {fileID: 11400000, guid: be6be38eeb3f6bd418381493eab2f6a9, type: 2}
+  - position: {x: 4, y: 2}
+    block: {fileID: 11400000, guid: be6be38eeb3f6bd418381493eab2f6a9, type: 2}
+  - position: {x: 4, y: 3}
+    block: {fileID: 11400000, guid: be6be38eeb3f6bd418381493eab2f6a9, type: 2}
