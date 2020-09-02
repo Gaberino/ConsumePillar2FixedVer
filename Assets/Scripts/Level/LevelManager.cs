@@ -1,6 +1,7 @@
 ﻿using NaughtyAttributes;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class LevelManager : MonoBehaviour
@@ -29,6 +30,7 @@ public class LevelManager : MonoBehaviour
 
     private int CurrentLevelIndex;
     private BlockInstance[,,] CurrentLevel;
+    private List<Vector3Int> SolutionBlockPositions;
     //[SerializeField]
     //private Vector2 PlayerPosition;
 
@@ -37,7 +39,7 @@ public class LevelManager : MonoBehaviour
     void Start()
     {
         Instance = this;
-        undoInstructions.Push(new Queue<Action>());
+        ResetUndoInstructions();
         LoadLevel(InitialLevel);
     }
 
@@ -205,6 +207,8 @@ public class LevelManager : MonoBehaviour
             block = playerBlock,
         };
 
+        SolutionBlockPositions = new List<Vector3Int>();
+
         foreach (LevelTemplate.BlockDefinition blockDefinition in level.Blocklist)
         {
             LoadBlock(blockDefinition);
@@ -227,7 +231,15 @@ public class LevelManager : MonoBehaviour
     public void UnloadCurrentLevel()
     {
         UnloadBlocks();
+        ResetUndoInstructions();
         CurrentLevel = null;
+        SolutionBlockPositions = null;
+    }
+
+    public void ResetUndoInstructions()
+    {
+        undoInstructions.Clear();
+        undoInstructions.Push(new Queue<Action>());
     }
 
     public void UnloadBlocks()
@@ -257,37 +269,53 @@ public class LevelManager : MonoBehaviour
 
     public bool IsLevelInWinState()
     {
-        //
-        // Placeholder: Currently sets IsInWinState when player is on a solution block.
-        //
+        // Change based on the actual desired win state.
+        //return isThereANonSolutionBlockOnEverySolutionBlock();
+        return isThereAPlayerBlockOnEverySolutionBlock();
+    }
 
-        HashSet<Block.PROPERTY> propertiesAtPosition = new HashSet<Block.PROPERTY>();
+    public bool isThereANonSolutionBlockOnEverySolutionBlock()
+    {
+        List<HashSet<Block.PROPERTY>> blockPropertiesAtEachSolutionPosition = getBlockPropertiesAtEachSolutionPosition();
 
-        for (int x = 0; x < Levels[CurrentLevelIndex].Width; x++)
+        // Return whether there is a non-solution block with any properties at the same position as every solution block.
+        blockPropertiesAtEachSolutionPosition.ForEach(properties => properties.Remove(Block.PROPERTY.Solution));
+        return blockPropertiesAtEachSolutionPosition.All(properties => properties.Count > 0);
+    }
+
+    public bool isThereAPlayerBlockOnEverySolutionBlock()
+    {
+        List<HashSet<Block.PROPERTY>> blockPropertiesAtEachSolutionPosition = getBlockPropertiesAtEachSolutionPosition();
+
+        // Return whether there is a player block at the same position as every solution block.
+        return blockPropertiesAtEachSolutionPosition.All(properties => properties.Contains(Block.PROPERTY.Player)); 
+    }
+
+    public List<HashSet<Block.PROPERTY>> getBlockPropertiesAtEachSolutionPosition()
+    {
+        List<HashSet<Block.PROPERTY>> blockPropertiesAtEachSolutionPosition = new List<HashSet<Block.PROPERTY>>();
+
+        foreach (Vector3Int solutionBlockPosition in SolutionBlockPositions)
         {
-            for (int y = 0; y < Levels[CurrentLevelIndex].Height; y++)
+            HashSet<Block.PROPERTY> propertiesAtSolutionBlockPosition = new HashSet<Block.PROPERTY>();
+            blockPropertiesAtEachSolutionPosition.Add(propertiesAtSolutionBlockPosition);
+
+            // Check layers 1 and 2 for objects
+            for (int zLayer = 0; zLayer < 3; zLayer++)
             {
-                propertiesAtPosition.Clear();
+                BlockInstance blockAtSolution = CurrentLevel[solutionBlockPosition.x, solutionBlockPosition.y, zLayer];
 
-                for (int z = 0; z < 3; z++)
+                if (blockAtSolution != null)
                 {
-                    if (CurrentLevel[x, y, z] != null)
-                    {
-                        foreach (Block.PROPERTY prop in CurrentLevel[x, y, z].block.Properties)
-                        {
-                            propertiesAtPosition.Add(prop);
-                        }
-                    }
-                }
-
-                if (propertiesAtPosition.Contains(Block.PROPERTY.Player) && propertiesAtPosition.Contains(Block.PROPERTY.Solution))
-                {
-                    return true;
+                    propertiesAtSolutionBlockPosition.UnionWith(blockAtSolution.block.Properties);
                 }
             }
         }
-        return false;
+
+        return blockPropertiesAtEachSolutionPosition;
     }
+
+
 
     public BlockInstance LoadBlock(LevelTemplate.BlockDefinition bD)
     {
@@ -316,6 +344,7 @@ public class LevelManager : MonoBehaviour
         else if (sbProps.Contains(Block.PROPERTY.Solid)) layerAssign = 1;
 
         someBlockInstance.gridPos = new Vector3Int(bD.position.x, bD.position.y, layerAssign);
+        if (sbProps.Contains(Block.PROPERTY.Solution)) SolutionBlockPositions.Add(someBlockInstance.gridPos);
 
         CurrentLevel[bD.position.x, bD.position.y, layerAssign] = someBlockInstance;
         instance.SendMessage("SetBlockInstance", someBlockInstance, SendMessageOptions.DontRequireReceiver);
