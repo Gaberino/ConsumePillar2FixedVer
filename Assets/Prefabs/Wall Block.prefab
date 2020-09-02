@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 7767098632927738741}
   - component: {fileID: 7767098632927738742}
   - component: {fileID: 7767098632927738743}
+  - component: {fileID: 5476749706460783002}
   m_Layer: 0
   m_Name: Wall Block
   m_TagString: Untagged
@@ -28,7 +29,7 @@ Transform:
   m_GameObject: {fileID: 7767098632927738736}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.9, y: 0.9, z: 0.9}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -95,3 +96,23 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &5476749706460783002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7767098632927738736}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0000737e49d44a24b82ef430c8fca93d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  RockMats:
+  - {fileID: 2100000, guid: 42e06125a45322145943b79c8029ee1b, type: 2}
+  - {fileID: 2100000, guid: c56c46c31be1eec4db1c9c9d593365e2, type: 2}
+  - {fileID: 2100000, guid: 038b4bdded7cda749bb715f0814ea29f, type: 2}
+  RockMeshes:
+  - {fileID: -2486328387479830182, guid: baa19d07367154b4b9378f50f3f4a2ca, type: 3}
+  - {fileID: 9206310897724611491, guid: db53b2de0cd75e24aa61cce1d22386f5, type: 3}
+  - {fileID: 6096232150614725954, guid: 929d9e272d97c69479a6ab0592e4a116, type: 3}

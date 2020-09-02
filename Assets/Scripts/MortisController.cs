@@ -299,9 +299,9 @@ public class MortisController : Singleton<MortisController>, IDynamicBlock
                 //start new undo stack
                 LevelManager.Instance.undoInstructions.Push(new Queue<Action>());
                 // On eat logic
-<<<<<<< HEAD
+
                 //LevelManager.Instance.OnAfterMove();
-=======
+
 
                 if (blockToConsume.block.Properties.Contains(Block.PROPERTY.Pusheable))
                     SfxManager.Instance.PlayEatSound(SfxManager.EatSoundStyle.Wet);
@@ -309,7 +309,7 @@ public class MortisController : Singleton<MortisController>, IDynamicBlock
                     SfxManager.Instance.PlayEatSound(SfxManager.EatSoundStyle.Wet);
                 else
                     SfxManager.Instance.PlayEatSound(SfxManager.EatSoundStyle.Dry);
->>>>>>> a78571dde61539b792cee57e0609f92123055341
+
             }
         });
     }
@@ -332,6 +332,7 @@ public class MortisController : Singleton<MortisController>, IDynamicBlock
 
     public void DoVisualMove(Vector2Int move)
     {
+        SfxManager.Instance.PlayMoveSound();
         Action completeAction = () => { LevelManager.Instance.OnAfterMove();}; ;
         if (myBlockInstance.linkedBlock == null) completeAction = () => { LevelManager.Instance.OnAfterMove(); canControl = true; };
 

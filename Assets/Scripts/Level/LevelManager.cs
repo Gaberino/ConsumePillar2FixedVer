@@ -411,6 +411,7 @@ public class LevelManager : MonoBehaviour
             //cleanse the junk
             undoInstructions.Pop();
             undoInstructions.Push(new Queue<Action>());
+            SfxManager.Instance.PlayUndoSound();
         }
     }
 

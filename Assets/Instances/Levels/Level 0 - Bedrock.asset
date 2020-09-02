@@ -34,4 +34,12 @@ MonoBehaviour:
   - position: {x: 4, y: 5}
     block: {fileID: 11400000, guid: be6be38eeb3f6bd418381493eab2f6a9, type: 2}
   - position: {x: 0, y: 8}
-    block: {fileID: 11400000, guid: 36eb6d48f5acddb4ea89566512e7b591, type: 2}
+    block: {fileID: 11400000, guid: f6b673f1fb97e03479e6ad0a0f215bf0, type: 2}
+  - position: {x: 15, y: 15}
+    block: {fileID: 11400000, guid: f6b673f1fb97e03479e6ad0a0f215bf0, type: 2}
+  - position: {x: 14, y: 15}
+    block: {fileID: 11400000, guid: f6b673f1fb97e03479e6ad0a0f215bf0, type: 2}
+  - position: {x: 13, y: 15}
+    block: {fileID: 11400000, guid: f6b673f1fb97e03479e6ad0a0f215bf0, type: 2}
+  - position: {x: 12, y: 15}
+    block: {fileID: 11400000, guid: f6b673f1fb97e03479e6ad0a0f215bf0, type: 2}
