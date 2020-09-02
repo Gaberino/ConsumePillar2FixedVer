@@ -143,7 +143,7 @@ public class MortisController : Singleton<MortisController>, IDynamicBlock
             //Tween.Position(transform, transform.position + transform.forward, moveDur, 0f, Tween.EaseSpring, Tween.LoopType.None, null,
             //() => { canControl = true; });
             //SfxManager.Instance.PlayMoveSound();
-            LevelManager.Instance.OnAfterMove();
+            //LevelManager.Instance.OnAfterMove();
         }
     }
 
@@ -273,11 +273,15 @@ public class MortisController : Singleton<MortisController>, IDynamicBlock
                 };
                 LevelManager.Instance.RemoveAtUnchecked(blockToConsume.gridPos);
                 //Debug.Log("Monch");
-                Tween.LocalScale(transform, transform.localScale, moveDur, 0f, Tween.EaseWobble, Tween.LoopType.None, null, () => { canControl = true; });
                 LevelManager.BlockInstance tempLinkInstance = myBlockInstance.linkedBlock;
                 LevelManager.BlockInstance newSegment = LevelManager.Instance.LoadBlock(def, tempLinkInstance, myBlockInstance);
                 LevelManager.Instance.SetBlockLink(myBlockInstance, newSegment);
                 if (newSegment.linkedBlock != null) LevelManager.Instance.SetBlockOwner(newSegment.linkedBlock, newSegment);
+
+                newSegment.gameObject.transform.forward = this.transform.forward;
+
+                Tween.LocalScale(transform, transform.localScale, moveDur, 0f, Tween.EaseWobble, Tween.LoopType.None, null, 
+                    () => { transform.localPosition = (Vector3)Vector3Int.RoundToInt(transform.localPosition); canControl = true; });
 
                 canControl = false;
                 Direction tempfacing = facing;
@@ -295,6 +299,7 @@ public class MortisController : Singleton<MortisController>, IDynamicBlock
                 //start new undo stack
                 LevelManager.Instance.undoInstructions.Push(new Queue<Action>());
                 // On eat logic
+                //LevelManager.Instance.OnAfterMove();
             }
         });
     }
@@ -317,9 +322,23 @@ public class MortisController : Singleton<MortisController>, IDynamicBlock
 
     public void DoVisualMove(Vector2Int move)
     {
-        Action completeAction = null;
-        if (myBlockInstance.linkedBlock == null) completeAction = () => { canControl = true; };
+        Action completeAction = () => { LevelManager.Instance.OnAfterMove();}; ;
+        if (myBlockInstance.linkedBlock == null) completeAction = () => { LevelManager.Instance.OnAfterMove(); canControl = true; };
 
         Tween.Position(transform, transform.position + transform.forward, moveDur, 0f, Tween.EaseSpring, Tween.LoopType.None, null, completeAction);
+    }
+
+    public void Win()
+    {
+        
+        //Tween.Shake(transform, transform.localPosition, Vector3.one, 4f, 0f, Tween.LoopType.None);
+        Tween.Position(transform, transform.position + (Vector3.up * 3), 1f, 0f, Tween.EaseInOutStrong, Tween.LoopType.None, null,
+    () => { PFXManager.Instance.SpawnParticle(PFXManager.PFX.TPCHARGE, transform); });
+        //Tween.Rotate(transform, Vector3.up * 3600, Space.Self, 4f, 0f, Tween.EaseInOutStrong, Tween.LoopType.None);
+        Tween.LocalScale(transform, Vector3.zero, 0.5f, 4f, Tween.EaseSpring, Tween.LoopType.None, null,
+                    () => { PFXManager.Instance.SpawnParticle(PFXManager.PFX.TPBURST, transform.position, Vector3.zero);
+                        LevelManager.Instance.Invoke("GoToNextLevel", 1f);
+                    });
+
     }
 }

@@ -3,6 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Pixelplacement;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class LevelManager : MonoBehaviour
 {
@@ -33,6 +36,9 @@ public class LevelManager : MonoBehaviour
     private List<Vector3Int> SolutionBlockPositions;
     //[SerializeField]
     //private Vector2 PlayerPosition;
+    public Scene FinishedGameScene;
+
+    public RawImage fadeImage;
 
     public Stack<Queue<Action>> undoInstructions = new Stack<Queue<Action>>();
 
@@ -41,6 +47,8 @@ public class LevelManager : MonoBehaviour
         Instance = this;
         ResetUndoInstructions();
         LoadLevel(InitialLevel);
+        fadeImage.color = Color.black;
+        Tween.Color(fadeImage, Color.clear, 0.5f, 0.5f, Tween.EaseInOutStrong);
     }
 
     void OnDestroy()
@@ -58,7 +66,7 @@ public class LevelManager : MonoBehaviour
     {
         Vector2Int target = (Vector2Int)someBlock.gridPos + direction;
 
-        if (CurrentLevel[target.x, target.y, 2] != null) return false;
+        if (WithinBounds(target, out int x, out int y) && CurrentLevel[target.x, target.y, 2] != null) return false;
 
         if (someBlock.linkedBlock != null)
             if (!someBlock.linkedBlock.script.CanLinkedMove(direction, someBlock.gridPos)) return false;
@@ -187,15 +195,18 @@ public class LevelManager : MonoBehaviour
 
     public void GoToNextLevel()
     {
-        SwitchToLevel(CurrentLevelIndex + 1);
+        Tween.Color(fadeImage, Color.black, 0.2f, 0f, Tween.EaseInOutStrong, Tween.LoopType.None, null,
+            () => { SwitchToLevel(CurrentLevelIndex + 1); });
     }
 
     public void SwitchToLevel(int levelIndex)
     {
-
+        Tween.Color(fadeImage, Color.clear, 0.5f, 0.5f, Tween.EaseInOutStrong);
         // Do other things like animations.
         UnloadCurrentLevel();
-        LoadLevel(levelIndex);
+        if (levelIndex < Levels.Count)
+            LoadLevel(levelIndex);
+        else SceneManager.LoadScene(FinishedGameScene.buildIndex);
     }
 
     private void LoadLevel(int levelIndex)
@@ -205,11 +216,6 @@ public class LevelManager : MonoBehaviour
         LevelTemplate level = Levels[levelIndex];
         Board.Instance.SetGrid(level.Height, level.Width);
         CurrentLevel = new BlockInstance[level.Height, level.Width, 3]; //3 layers, passables, solids, player
-        LevelTemplate.BlockDefinition pBlock = new LevelTemplate.BlockDefinition
-        {
-            position = level.PlayerStartPostion,
-            block = playerBlock,
-        };
 
         SolutionBlockPositions = new List<Vector3Int>();
 
@@ -226,7 +232,21 @@ public class LevelManager : MonoBehaviour
             //   gameObject = instance,
             //};
         }
+        Invoke("LoadPlayerLate", 0.2f);
+        //purge undo of level make
+        undoInstructions.Pop();
+        undoInstructions.Push(new Queue<Action>());
+    }
+
+    private void LoadPlayerLate()
+    {
+        LevelTemplate.BlockDefinition pBlock = new LevelTemplate.BlockDefinition
+        {
+            position = Levels[CurrentLevelIndex].PlayerStartPostion,
+            block = playerBlock,
+        };
         LoadBlock(pBlock);
+
         //purge undo of level make
         undoInstructions.Pop();
         undoInstructions.Push(new Queue<Action>());
@@ -259,8 +279,9 @@ public class LevelManager : MonoBehaviour
 
     public void OnCompleteLevel()
     {
+        MortisController.Instance.Win();
         // Do other things like animations.
-        GoToNextLevel();
+        //GoToNextLevel();
     }
 
     public void OnAfterMove()
