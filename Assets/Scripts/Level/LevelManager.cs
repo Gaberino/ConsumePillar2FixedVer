@@ -28,7 +28,7 @@ public class LevelManager : MonoBehaviour
     [Required]
     public Block playerBlock;
 
-    private int CurrentLevelIndex;
+    public int CurrentLevelIndex;
     private BlockInstance[,,] CurrentLevel;
     private List<Vector3Int> SolutionBlockPositions;
     //[SerializeField]
@@ -440,6 +440,6 @@ public class LevelManager : MonoBehaviour
     {
         x = (int)target.x;
         y = (int)target.y;
-        return x >= 0 && y >= 0 && x < Levels[CurrentLevelIndex].Width && y < Levels[CurrentLevelIndex].Height;
+        return x >= 0 && y >= 0 && x < Levels[CurrentLevelIndex].Height && y < Levels[CurrentLevelIndex].Width;
     }
 }
