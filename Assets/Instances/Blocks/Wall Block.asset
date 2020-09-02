@@ -10,8 +10,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3ec87f47a249a5d4daca92dc7b2c7a17, type: 3}
-  m_Name: Basic Block
+  m_Name: Wall Block
   m_EditorClassIdentifier: 
-  Properties: 0100000002000000
-  Prefab: {fileID: 4237046981648208438, guid: 686422e8708a95f449d37d1dc97874ba, type: 3}
-  consumedForm: {fileID: 11400000, guid: 95f5ab2e09a63e548ae26b2eaeffb9fc, type: 2}
+  Properties: 01000000
+  Prefab: {fileID: 7767098632927738736, guid: d9dedebd39b31b543aa9a58e2b6d46b7, type: 3}
+  consumedForm: {fileID: 0}
