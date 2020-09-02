@@ -9,11 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4bab7ea60de6c0344afebb68a2237e77, type: 3}
-  m_Name: Level 2 - Astral Boogaloo
+  m_Script: {fileID: 11500000, guid: 3ec87f47a249a5d4daca92dc7b2c7a17, type: 3}
+  m_Name: TutorialBlock1
   m_EditorClassIdentifier: 
-  LevelName: sumthiun
-  Height: 6
-  Width: 6
-  PlayerStartPostion: {x: 0, y: 0}
-  Blocklist: []
+  Properties: 01000000
+  Prefab: {fileID: 9124679852150268761, guid: b3a33be1b6a9b5d48b98ae7658df52de, type: 3}
+  consumedForm: {fileID: 0}

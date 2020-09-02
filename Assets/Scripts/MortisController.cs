@@ -124,7 +124,8 @@ public class MortisController : Singleton<MortisController>, IDynamicBlock
 
     void OnReset()
     {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        //SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        LevelManager.Instance.SwitchToLevel(LevelManager.Instance.CurrentLevelIndex);
     }
 
     void Do_Move_Forward()
@@ -149,12 +150,13 @@ public class MortisController : Singleton<MortisController>, IDynamicBlock
             //Tween.Position(transform, transform.position + transform.forward, moveDur, 0f, Tween.EaseSpring, Tween.LoopType.None, null,
             //() => { canControl = true; });
             //SfxManager.Instance.PlayMoveSound();
+            LevelManager.Instance.OnAfterMove();
         }
     }
 
     void SetSealing(LevelManager.BlockInstance[] adj)
     {
-        Debug.Log("Set Sealing!");
+        //Debug.Log("Set Sealing!");
         Dictionary<Direction, bool> newSeals = new Dictionary<Direction, bool>(sealedMoves);
         if (adj[0] != null && adj[0].block.Properties.Contains(Block.PROPERTY.Solid))
             newSeals[Direction.Up] = true;
