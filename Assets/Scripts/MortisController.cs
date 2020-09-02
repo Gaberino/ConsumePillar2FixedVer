@@ -299,7 +299,17 @@ public class MortisController : Singleton<MortisController>, IDynamicBlock
                 //start new undo stack
                 LevelManager.Instance.undoInstructions.Push(new Queue<Action>());
                 // On eat logic
+<<<<<<< HEAD
                 //LevelManager.Instance.OnAfterMove();
+=======
+
+                if (blockToConsume.block.Properties.Contains(Block.PROPERTY.Pusheable))
+                    SfxManager.Instance.PlayEatSound(SfxManager.EatSoundStyle.Wet);
+                else if (blockToConsume.block.Properties.Contains(Block.PROPERTY.Player))
+                    SfxManager.Instance.PlayEatSound(SfxManager.EatSoundStyle.Wet);
+                else
+                    SfxManager.Instance.PlayEatSound(SfxManager.EatSoundStyle.Dry);
+>>>>>>> a78571dde61539b792cee57e0609f92123055341
             }
         });
     }

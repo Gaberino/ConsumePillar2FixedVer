@@ -6,8 +6,15 @@ using Pixelplacement;
 public class SfxManager : Singleton<SfxManager>
 {
 
+	public enum EatSoundStyle
+    {
+		Wet,
+		Dry,
+    }
+
 	public AudioClip moveSound;
-	public AudioClip eatSound;
+	public AudioClip eatWetSound;
+	public AudioClip eatDrySound;
 	public AudioClip bumpSound;
 	public AudioClip winSound;
 	public AudioClip headPopOffSound;
@@ -38,9 +45,17 @@ public class SfxManager : Singleton<SfxManager>
 		TryPlay(moveSound, nameof(moveSound));
 	}
 
-	public void PlayEatSound()
+	public void PlayEatSound(EatSoundStyle style)
 	{
-		TryPlay(eatSound, nameof(eatSound));
+		switch (style)
+        {
+			case EatSoundStyle.Wet:
+				TryPlay(eatWetSound, nameof(eatWetSound));
+				break;
+			case EatSoundStyle.Dry:
+				TryPlay(eatDrySound, nameof(eatDrySound));
+				break;
+		}
 	}
 
 	public void PlayBumpSound()
