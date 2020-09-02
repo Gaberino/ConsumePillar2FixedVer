@@ -4,6 +4,7 @@ using UnityEngine;
 using Pixelplacement;
 using System;
 using UnityEngine.SceneManagement;
+using UnityEngine.InputSystem;
 
 public enum Direction { Up, Down, Left, Right, None}
 
@@ -266,6 +267,8 @@ public class MortisController : Singleton<MortisController>, IDynamicBlock
         {
             if (blockToConsume.block.Properties.Contains(Block.PROPERTY.Consumable))
             {
+                //if (blockToConsume.block.Properties.Contains(Block.PROPERTY.Player))
+                    //LevelManager.Instance.RemoveFromSolid(blockToConsume);
                 LevelTemplate.BlockDefinition def = new LevelTemplate.BlockDefinition
                 {
                     position = (Vector2Int)myBlockInstance.gridPos,
@@ -341,7 +344,9 @@ public class MortisController : Singleton<MortisController>, IDynamicBlock
 
     public void Win()
     {
-        
+        PlayerInput myIn = GetComponent<PlayerInput>();
+        myIn.enabled = false;
+        Set_Rotate(Direction.Down);
         //Tween.Shake(transform, transform.localPosition, Vector3.one, 4f, 0f, Tween.LoopType.None);
         Tween.Position(transform, transform.position + (Vector3.up * 3), 1f, 0f, Tween.EaseInOutStrong, Tween.LoopType.None, null,
     () => { PFXManager.Instance.SpawnParticle(PFXManager.PFX.TPCHARGE, transform); });

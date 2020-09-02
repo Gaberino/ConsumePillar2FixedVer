@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: TutorialBlock1
   m_EditorClassIdentifier: 
   Properties: 01000000
-  Prefab: {fileID: 9124679852150268761, guid: b3a33be1b6a9b5d48b98ae7658df52de, type: 3}
+  Prefab: {fileID: 6722386704508726653, guid: 6aa03e511b7b86d47bbb9e4257c52516, type: 3}
   consumedForm: {fileID: 0}

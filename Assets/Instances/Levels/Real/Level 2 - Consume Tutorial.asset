@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   LevelName: 
   Height: 3
-  Width: 8
+  Width: 9
   PlayerStartPostion: {x: 1, y: 3}
   Blocklist:
   - position: {x: 1, y: 0}
@@ -43,3 +43,5 @@ MonoBehaviour:
     block: {fileID: 11400000, guid: f6b673f1fb97e03479e6ad0a0f215bf0, type: 2}
   - position: {x: 2, y: 4}
     block: {fileID: 11400000, guid: f6b673f1fb97e03479e6ad0a0f215bf0, type: 2}
+  - position: {x: 1, y: 8}
+    block: {fileID: 11400000, guid: f11e180586c85534c9778c979b4bcaf9, type: 2}

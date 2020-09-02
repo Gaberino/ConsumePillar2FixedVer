@@ -36,7 +36,7 @@ public class LevelManager : MonoBehaviour
     private List<Vector3Int> SolutionBlockPositions;
     //[SerializeField]
     //private Vector2 PlayerPosition;
-    public Scene FinishedGameScene;
+    public int FinishedSceneIndex;
 
     public RawImage fadeImage;
 
@@ -206,7 +206,7 @@ public class LevelManager : MonoBehaviour
         UnloadCurrentLevel();
         if (levelIndex < Levels.Count)
             LoadLevel(levelIndex);
-        else SceneManager.LoadScene(FinishedGameScene.buildIndex);
+        else SceneManager.LoadScene(FinishedSceneIndex);
     }
 
     private void LoadLevel(int levelIndex)
@@ -451,11 +451,29 @@ public class LevelManager : MonoBehaviour
             undoInstructions.Peek().Enqueue(revive);
             CurrentLevel[pos.x, pos.y, pos.z].gameObject.SetActive(false);
         }
-        if (CurrentLevel[pos.x, pos.y, pos.z].ownerBlock != null) CurrentLevel[pos.x, pos.y, pos.z].ownerBlock.linkedBlock = null; //clear self from parent
+        if (CurrentLevel[pos.x, pos.y, pos.z]?.ownerBlock != null) CurrentLevel[pos.x, pos.y, pos.z].ownerBlock.linkedBlock = null; //clear self from parent
+        //make sure link is now a solid
+        //if (CurrentLevel[pos.x, pos.y, pos.z]?.linkedBlock != null)
+            //ProjectToSolid(CurrentLevel[pos.x, pos.y, pos.z].linkedBlock);
+
         CurrentLevel[pos.x, pos.y, pos.z] = null;
 
     }
+/**
+    public void ProjectToSolid(BlockInstance b)
+    {
+        undoInstructions.Peek().Enqueue(() => { RemoveFromSolid(b); });
 
+        CurrentLevel[b.gridPos.x, b.gridPos.y, 1] = b;
+    }
+
+    public void RemoveFromSolid(BlockInstance b)
+    {
+        undoInstructions.Peek().Enqueue(() => { ProjectToSolid(b); });
+
+        CurrentLevel[b.gridPos.x, b.gridPos.y, 1] = null;
+    }
+**/
     public void ReviveBlock(BlockInstance dedBlok)
     {
         dedBlok.gameObject.SetActive(true);

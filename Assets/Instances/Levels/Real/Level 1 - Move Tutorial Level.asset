@@ -13,17 +13,23 @@ MonoBehaviour:
   m_Name: Level 1 - Move Tutorial Level
   m_EditorClassIdentifier: 
   LevelName: 
-  Height: 4
+  Height: 7
   Width: 5
   PlayerStartPostion: {x: 0, y: 0}
   Blocklist:
   - position: {x: 0, y: 4}
-    block: {fileID: 11400000, guid: 36eb6d48f5acddb4ea89566512e7b591, type: 2}
+    block: {fileID: 11400000, guid: 4d9c9bc88e3fcd6499f283bd3b3990d2, type: 2}
   - position: {x: 1, y: 4}
-    block: {fileID: 11400000, guid: 36eb6d48f5acddb4ea89566512e7b591, type: 2}
+    block: {fileID: 11400000, guid: 3991c459d1491034a819f19f73054736, type: 2}
   - position: {x: 2, y: 4}
-    block: {fileID: 11400000, guid: 36eb6d48f5acddb4ea89566512e7b591, type: 2}
+    block: {fileID: 11400000, guid: 4d9c9bc88e3fcd6499f283bd3b3990d2, type: 2}
   - position: {x: 3, y: 4}
-    block: {fileID: 11400000, guid: 36eb6d48f5acddb4ea89566512e7b591, type: 2}
+    block: {fileID: 11400000, guid: 4d9c9bc88e3fcd6499f283bd3b3990d2, type: 2}
   - position: {x: 3, y: 3}
     block: {fileID: 11400000, guid: be6be38eeb3f6bd418381493eab2f6a9, type: 2}
+  - position: {x: 4, y: 4}
+    block: {fileID: 11400000, guid: 4d9c9bc88e3fcd6499f283bd3b3990d2, type: 2}
+  - position: {x: 6, y: 4}
+    block: {fileID: 11400000, guid: 4d9c9bc88e3fcd6499f283bd3b3990d2, type: 2}
+  - position: {x: 5, y: 4}
+    block: {fileID: 11400000, guid: 36eb6d48f5acddb4ea89566512e7b591, type: 2}
