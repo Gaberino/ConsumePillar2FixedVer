@@ -73,6 +73,14 @@ public class @PlayerActions : IInputActionCollection, IDisposable
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """"
+                },
+                {
+                    ""name"": ""Exit"",
+                    ""type"": ""Button"",
+                    ""id"": ""40f668ce-2c96-4a69-92f6-6a0bcab5e805"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """"
                 }
             ],
             ""bindings"": [
@@ -196,6 +204,17 @@ public class @PlayerActions : IInputActionCollection, IDisposable
                     ""action"": ""Reset"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""d251e550-0395-4b86-8fd3-8b6ba2901136"",
+                    ""path"": ""<Keyboard>/escape"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard"",
+                    ""action"": ""Exit"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -223,6 +242,7 @@ public class @PlayerActions : IInputActionCollection, IDisposable
         m_Default_Consume = m_Default.FindAction("Consume", throwIfNotFound: true);
         m_Default_Undo = m_Default.FindAction("Undo", throwIfNotFound: true);
         m_Default_Reset = m_Default.FindAction("Reset", throwIfNotFound: true);
+        m_Default_Exit = m_Default.FindAction("Exit", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -279,6 +299,7 @@ public class @PlayerActions : IInputActionCollection, IDisposable
     private readonly InputAction m_Default_Consume;
     private readonly InputAction m_Default_Undo;
     private readonly InputAction m_Default_Reset;
+    private readonly InputAction m_Default_Exit;
     public struct DefaultActions
     {
         private @PlayerActions m_Wrapper;
@@ -290,6 +311,7 @@ public class @PlayerActions : IInputActionCollection, IDisposable
         public InputAction @Consume => m_Wrapper.m_Default_Consume;
         public InputAction @Undo => m_Wrapper.m_Default_Undo;
         public InputAction @Reset => m_Wrapper.m_Default_Reset;
+        public InputAction @Exit => m_Wrapper.m_Default_Exit;
         public InputActionMap Get() { return m_Wrapper.m_Default; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -320,6 +342,9 @@ public class @PlayerActions : IInputActionCollection, IDisposable
                 @Reset.started -= m_Wrapper.m_DefaultActionsCallbackInterface.OnReset;
                 @Reset.performed -= m_Wrapper.m_DefaultActionsCallbackInterface.OnReset;
                 @Reset.canceled -= m_Wrapper.m_DefaultActionsCallbackInterface.OnReset;
+                @Exit.started -= m_Wrapper.m_DefaultActionsCallbackInterface.OnExit;
+                @Exit.performed -= m_Wrapper.m_DefaultActionsCallbackInterface.OnExit;
+                @Exit.canceled -= m_Wrapper.m_DefaultActionsCallbackInterface.OnExit;
             }
             m_Wrapper.m_DefaultActionsCallbackInterface = instance;
             if (instance != null)
@@ -345,6 +370,9 @@ public class @PlayerActions : IInputActionCollection, IDisposable
                 @Reset.started += instance.OnReset;
                 @Reset.performed += instance.OnReset;
                 @Reset.canceled += instance.OnReset;
+                @Exit.started += instance.OnExit;
+                @Exit.performed += instance.OnExit;
+                @Exit.canceled += instance.OnExit;
             }
         }
     }
@@ -367,5 +395,6 @@ public class @PlayerActions : IInputActionCollection, IDisposable
         void OnConsume(InputAction.CallbackContext context);
         void OnUndo(InputAction.CallbackContext context);
         void OnReset(InputAction.CallbackContext context);
+        void OnExit(InputAction.CallbackContext context);
     }
 }

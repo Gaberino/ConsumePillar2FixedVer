@@ -124,6 +124,11 @@ public class MortisController : Singleton<MortisController>, IDynamicBlock
         LevelManager.Instance.SwitchToLevel(LevelManager.Instance.CurrentLevelIndex);
     }
 
+    void OnExit()
+    {
+        Application.Quit();
+    }
+
     void Do_Move_Forward()
     {
         Vector2Int direction = new Vector2Int(Mathf.RoundToInt(transform.forward.x), Mathf.RoundToInt(transform.forward.z));

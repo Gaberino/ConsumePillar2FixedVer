@@ -258,6 +258,16 @@ public class LevelManager : MonoBehaviour
         ResetUndoInstructions();
         CurrentLevel = null;
         SolutionBlockPositions = null;
+        KillDeadweight();
+    }
+
+    public void KillDeadweight()
+    {
+       
+        foreach (GameObject g in Resources.FindObjectsOfTypeAll<GameObject>())
+        {
+            if (!g.activeInHierarchy && g.transform.parent == this.transform) Destroy(g);
+        }
     }
 
     public void ResetUndoInstructions()

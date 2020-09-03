@@ -27,4 +27,9 @@ public class MenuMan : MonoBehaviour
                 () => { SceneManager.LoadScene(gameSceneIndex); });
         }
     }
+
+    void OnExit()
+    {
+        Application.Quit();
+    }
 }
