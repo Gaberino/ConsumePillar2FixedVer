@@ -279,8 +279,13 @@ public class MortisController : Singleton<MortisController>, IDynamicBlock
                     position = (Vector2Int)myBlockInstance.gridPos,
                     block = blockToConsume.block.consumedForm,
                 };
-                LevelManager.Instance.RemoveAtUnchecked(blockToConsume.gridPos);
-                //Debug.Log("Monch");
+                if (!blockToConsume.block.Properties.Contains(Block.PROPERTY.Player))
+                    LevelManager.Instance.RemoveAtUnchecked(blockToConsume.gridPos);
+                else if (blockToConsume?.linkedBlock != null)
+                {
+                    blockToConsume.linkedBlock.script.Decouple();
+                    LevelManager.Instance.RemoveAtUnchecked(blockToConsume.gridPos);
+                }
                 LevelManager.BlockInstance tempLinkInstance = myBlockInstance.linkedBlock;
                 LevelManager.BlockInstance newSegment = LevelManager.Instance.LoadBlock(def, tempLinkInstance, myBlockInstance);
                 LevelManager.Instance.SetBlockLink(myBlockInstance, newSegment);
@@ -361,5 +366,10 @@ public class MortisController : Singleton<MortisController>, IDynamicBlock
                         LevelManager.Instance.Invoke("GoToNextLevel", 1f);
                     });
 
+    }
+
+    public void Decouple()
+    {
+        //does nothing
     }
 }

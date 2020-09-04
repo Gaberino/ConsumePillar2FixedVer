@@ -7,6 +7,7 @@ using Pixelplacement;
 public class RigidMortSegment : MonoBehaviour, IDynamicBlock
 {
     LevelManager.BlockInstance myBlockInstance;
+    public Block decoupledForm;
 //hook into who is ahead in chain or maybe ahead knows behind? so when ahead tries to move it tries to move behind
     public void SetBlockInstance(LevelManager.BlockInstance toSet) //important guy ayyyyyy
     {
@@ -46,6 +47,18 @@ public class RigidMortSegment : MonoBehaviour, IDynamicBlock
         LevelManager.Instance.MoveBlock(myBlockInstance, parentMoveDir);
         if (myBlockInstance.linkedBlock?.script != null) myBlockInstance.linkedBlock.script.DoLinkedMove(parentMoveDir, storedPos);
     }
+
+    public void Decouple()
+    {
+        if (myBlockInstance.linkedBlock != null) myBlockInstance.linkedBlock.script.Decouple();
+        LevelTemplate.BlockDefinition dcDef = new LevelTemplate.BlockDefinition
+        {
+            position = (Vector2Int)myBlockInstance.gridPos,
+            block = decoupledForm,
+        };
+        LevelManager.Instance.LoadBlock(dcDef);
+        LevelManager.Instance.RemoveAtUnchecked(myBlockInstance.gridPos);
+    }
 }
 
 public interface IDynamicBlock
@@ -54,4 +67,5 @@ public interface IDynamicBlock
     void SetBlockInstance(LevelManager.BlockInstance toSet);
     void DoVisualMove(Vector2Int move);
     void DoLinkedMove(Vector2Int parentMoveDir, Vector3Int parentPos);
+    void Decouple();
 }
