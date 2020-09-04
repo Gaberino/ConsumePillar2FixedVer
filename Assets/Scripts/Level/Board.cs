@@ -34,5 +34,8 @@ public class Board : MonoBehaviour
         TerrainObject.transform.localPosition = new Vector3(-8.0f + factor * 3.0f, -14.0f, blockHeight + 2.0f);
         
         transform.localPosition = new Vector3 (blockWidth/-2.0f, -0.5f, blockHeight/-2.0f);
+
+        //scale cam
+        Camera.main.orthographicSize = 5 + (((blockWidth / 4) + (blockHeight / 2)) / 2);
     }
 }
