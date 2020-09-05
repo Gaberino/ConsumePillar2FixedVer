@@ -6,6 +6,7 @@ using UnityEngine;
 using Pixelplacement;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using TMPro;
 
 public class LevelManager : MonoBehaviour
 {
@@ -39,6 +40,8 @@ public class LevelManager : MonoBehaviour
     public int FinishedSceneIndex;
 
     public RawImage fadeImage;
+    public TextMeshProUGUI levelNameText;
+    private Color TextColor;
 
     public Stack<Queue<Action>> undoInstructions = new Stack<Queue<Action>>();
 
@@ -49,11 +52,21 @@ public class LevelManager : MonoBehaviour
         LoadLevel(InitialLevel);
         fadeImage.color = Color.black;
         Tween.Color(fadeImage, Color.clear, 0.5f, 0.5f, Tween.EaseInOutStrong);
+        TextColor = levelNameText.color;
+        levelNameText.text = FullLevelName(InitialLevel);
+        //levelNameText.alpha = 0;
+        levelNameText.CrossFadeColor(Color.clear, 0f, false, true);
+        levelNameText.CrossFadeColor(TextColor, 1.2f, false, true);
     }
 
     void OnDestroy()
     {
         Instance = null;
+    }
+
+    public string FullLevelName(int index)
+    {
+        return (index + 1).ToString() + " - " + Levels[index].LevelName;
     }
 
     // public void ResetPlayerPosition()
@@ -195,6 +208,8 @@ public class LevelManager : MonoBehaviour
 
     public void GoToNextLevel()
     {
+        //levelNameText.CrossFadeAlpha(0f, 0.2f, false);
+        levelNameText.CrossFadeColor(Color.clear, 0.2f, false, true);
         Tween.Color(fadeImage, Color.black, 0.2f, 0f, Tween.EaseInOutStrong, Tween.LoopType.None, null,
             () => { SwitchToLevel(CurrentLevelIndex + 1); });
     }
@@ -202,6 +217,9 @@ public class LevelManager : MonoBehaviour
     public void SwitchToLevel(int levelIndex)
     {
         Tween.Color(fadeImage, Color.clear, 0.5f, 0.5f, Tween.EaseInOutStrong);
+        levelNameText.text = FullLevelName(levelIndex);
+        levelNameText.CrossFadeColor(TextColor, 1.2f, false, true);
+        //levelNameText.CrossFadeAlpha(80, 2f, false);
         // Do other things like animations.
         UnloadCurrentLevel();
         if (levelIndex < Levels.Count)
@@ -323,7 +341,7 @@ public class LevelManager : MonoBehaviour
         List<HashSet<Block.PROPERTY>> blockPropertiesAtEachSolutionPosition = getBlockPropertiesAtEachSolutionPosition();
 
         // Return whether there is a player block at the same position as every solution block.
-        return blockPropertiesAtEachSolutionPosition.All(properties => properties.Contains(Block.PROPERTY.Player)); 
+        return blockPropertiesAtEachSolutionPosition.All(properties => properties.Contains(Block.PROPERTY.Solvewith)); 
     }
 
     public List<HashSet<Block.PROPERTY>> getBlockPropertiesAtEachSolutionPosition()
@@ -461,7 +479,9 @@ public class LevelManager : MonoBehaviour
             undoInstructions.Peek().Enqueue(revive);
             CurrentLevel[pos.x, pos.y, pos.z].gameObject.SetActive(false);
         }
-        if (CurrentLevel[pos.x, pos.y, pos.z]?.ownerBlock != null) CurrentLevel[pos.x, pos.y, pos.z].ownerBlock.linkedBlock = null; //clear self from parent
+        if (CurrentLevel[pos.x, pos.y, pos.z]?.ownerBlock != null)
+            SetBlockLink(CurrentLevel[pos.x, pos.y, pos.z].ownerBlock, null);
+            //CurrentLevel[pos.x, pos.y, pos.z].ownerBlock.linkedBlock = null; //clear self from parent
         //make sure link is now a solid
         //if (CurrentLevel[pos.x, pos.y, pos.z]?.linkedBlock != null)
             //ProjectToSolid(CurrentLevel[pos.x, pos.y, pos.z].linkedBlock);

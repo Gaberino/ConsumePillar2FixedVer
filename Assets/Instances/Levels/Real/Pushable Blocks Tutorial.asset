@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4bab7ea60de6c0344afebb68a2237e77, type: 3}
   m_Name: Pushable Blocks Tutorial
   m_EditorClassIdentifier: 
-  LevelName: 
+  LevelName: To the limit
   Height: 4
   Width: 5
   PlayerStartPostion: {x: 1, y: 0}

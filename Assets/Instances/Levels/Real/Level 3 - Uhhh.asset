@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4bab7ea60de6c0344afebb68a2237e77, type: 3}
   m_Name: Level 3 - Uhhh
   m_EditorClassIdentifier: 
-  LevelName: 
+  LevelName: Another one
   Height: 6
   Width: 9
   PlayerStartPostion: {x: 2, y: 2}

@@ -58,6 +58,7 @@ public class RigidMortSegment : MonoBehaviour, IDynamicBlock
         };
         LevelManager.Instance.LoadBlock(dcDef);
         LevelManager.Instance.RemoveAtUnchecked(myBlockInstance.gridPos);
+        
     }
 }
 

@@ -286,6 +286,7 @@ public class MortisController : Singleton<MortisController>, IDynamicBlock
                     blockToConsume.linkedBlock.script.Decouple();
                     LevelManager.Instance.RemoveAtUnchecked(blockToConsume.gridPos);
                 }
+                else LevelManager.Instance.RemoveAtUnchecked(blockToConsume.gridPos);
                 LevelManager.BlockInstance tempLinkInstance = myBlockInstance.linkedBlock;
                 LevelManager.BlockInstance newSegment = LevelManager.Instance.LoadBlock(def, tempLinkInstance, myBlockInstance);
                 LevelManager.Instance.SetBlockLink(myBlockInstance, newSegment);

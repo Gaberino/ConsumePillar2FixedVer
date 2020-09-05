@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4bab7ea60de6c0344afebb68a2237e77, type: 3}
   m_Name: Balance
   m_EditorClassIdentifier: 
-  LevelName: 
+  LevelName: Balance
   Height: 8
   Width: 4
   PlayerStartPostion: {x: 4, y: 1}
